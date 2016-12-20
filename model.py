@@ -14,12 +14,17 @@ class DataProvider(object):
             self.data_X, self.data_y = self.load_mnist()
             self.len = len(self.data_X)
         elif config.dataset == 'imagenet':
-            self.data = glob(os.path.join("/home/zmzhou/Desktop/Workspace/dataset/imagenet/ILSVRC2012/ILSVRC2012_img_train_t3/n*/*.JPEG"))
+            self.data = glob(os.path.join("./data/imagenet/ILSVRC2012/ILSVRC2012_img_train_t3/n*/*.JPEG"))
+            print 'data len:', len(self.data)
+            np.random.shuffle(self.data)
+            self.len = len(self.data)
+        elif config.dataset == 'celebA':
+            self.data = glob(os.path.join("./data/celebA/img_align_celeba/*.jpg"))
             print 'data len:', len(self.data)
             np.random.shuffle(self.data)
             self.len = len(self.data)
         else:
-            self.data = glob(os.path.join("/home/zmzhou/Desktop/Workspace/dataset/auto/", config.dataset, "*.jpg"))
+            self.data = glob(os.path.join("./data/", config.dataset, "*.jpg"))
             print 'data len:', len(self.data)
             np.random.shuffle(self.data)
             self.len = len(self.data)
