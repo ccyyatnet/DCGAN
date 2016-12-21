@@ -8,7 +8,7 @@ import tensorflow as tf
 
 tf.app.flags.DEFINE_string("devices", "gpu:0", "Which gpu to be used")
 
-tf.app.flags.DEFINE_string("dataset", "mnist", "The name of dataset [celebA, mnist, lsun]")
+tf.app.flags.DEFINE_string("dataset", "celebA", "The name of dataset [celebA, mnist, lsun]")
 tf.app.flags.DEFINE_integer("image_size", 64, "The size of the output images to produce [64]")
 tf.app.flags.DEFINE_integer("center_crop_size", 108, "The width of the images presented to the model, 0 for auto")
 tf.app.flags.DEFINE_boolean("is_crop", True, "True for training, False for testing [False]")
