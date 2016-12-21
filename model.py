@@ -150,7 +150,7 @@ class DCGAN(object):
         self.z = tf.placeholder(tf.float32, [config.batch_size, config.z_dim], name='z')
         self.images = tf.placeholder(tf.float32, [config.batch_size] + [config.image_size, config.image_size, config.c_dim], name='real_images')
         #self.images_Y = tf.slice(self.images, [0,0,0,0], [-1, -1,-1,1])
-        self.images_Y, self.images_U, self.images_V = tf.split(self.images, axis=3)
+        self.images_Y, self.images_U, self.images_V = tf.split(3, 3, self.images)
         print 'Y shape after split', self.images_Y.get_shape()
 
         #self.generate_image = self.generator(self.z, config=config) #old
