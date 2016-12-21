@@ -6,7 +6,8 @@ import math
 import json
 import random
 import pprint
-import scipy.misc
+#import scipy.misc
+import cv2
 import numpy as np
 from time import gmtime, strftime
 
@@ -22,12 +23,11 @@ def save_images(images, size, image_path):
 
 def imread(path, is_grayscale = False):
     if (is_grayscale):
-        return scipy.misc.imread(path, flatten = True).astype(np.float)
+        #return scipy.misc.imread(path, flatten = True).astype(np.float)
+        return cv2.imread(path, cv2.IMREAD_GRAYSCALE)
     else:
-        return scipy.misc.imread(path).astype(np.float)
-
-def merge_images(images, size):
-    return inverse_transform(images)
+        #return scipy.misc.imread(path).astype(np.float)
+        return cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2YUV)
 
 def merge(images, size):
     h, w = images.shape[1], images.shape[2]
@@ -35,14 +35,15 @@ def merge(images, size):
     for idx, image in enumerate(images):
         i = idx % size[1]
         j = idx // size[1]
-        img[j*h:j*h+h, i*w:i*w+w, :] = image
+        img[j*h:j*h+h, i*w:i*w+w, :] = cv2.cvtColor(image, cv2.COLOR_YUV2BGR)
 
     return img
 
 def imsave(images, size, path):
-    return scipy.misc.imsave(path, merge(images, size))
+    #return scipy.misc.imsave(path, merge(images, size))
+    cv2.imwrite(path, merge(images, size))
 
-def center_crop(x, crop_h, crop_w=None, resize_w=64):
+def center_crop(x, crop_h, crop_w=None, resize_w=64): 
     h, w = x.shape[:2]
 
     if crop_w is None:
@@ -52,19 +53,20 @@ def center_crop(x, crop_h, crop_w=None, resize_w=64):
 
     j = int(round((h - crop_h)/2.))
     i = int(round((w - crop_w)/2.))
-    return scipy.misc.imresize(x[j:j+crop_h, i:i+crop_w],
+    #return scipy.misc.imresize(x[j:j+crop_h, i:i+crop_w],
+    #                           [resize_w, resize_w])
+    return cv2.resize(x[j:j+crop_h, i:i+crop_w],
                                [resize_w, resize_w])
 
-def transform(image, npx=64, is_crop=True, resize_w=64):
+def transform(image, npx=64, is_crop=True, resize_w=64): #with resize
     if is_crop:
         cropped_image = center_crop(image, npx, resize_w=resize_w)
     else:
         cropped_image = image
-    return np.array(cropped_image)/127.5 - 1.
+    return np.array(cropped_image)/127.5 - 1. 
 
-def inverse_transform(images):
+def inverse_transform(images): 
     return (images+1.)/2.
-
 
 def to_json(output_path, *layers):
     with open(output_path, "w") as layer_f:

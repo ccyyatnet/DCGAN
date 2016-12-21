@@ -1,5 +1,4 @@
 import os
-import scipy.misc
 import numpy as np
 
 from model import DCGAN
@@ -7,16 +6,16 @@ from utils import pp, visualize, to_json
 
 import tensorflow as tf
 
-tf.app.flags.DEFINE_string("devices", "gpu:3", "Which gpu to be used")
+tf.app.flags.DEFINE_string("devices", "gpu:0", "Which gpu to be used")
 
 tf.app.flags.DEFINE_string("dataset", "mnist", "The name of dataset [celebA, mnist, lsun]")
 tf.app.flags.DEFINE_integer("image_size", 64, "The size of the output images to produce [64]")
-tf.app.flags.DEFINE_integer("center_crop_size", 0, "The width of the images presented to the model, 0 for auto")
+tf.app.flags.DEFINE_integer("center_crop_size", 108, "The width of the images presented to the model, 0 for auto")
 tf.app.flags.DEFINE_boolean("is_crop", True, "True for training, False for testing [False]")
 tf.app.flags.DEFINE_integer("train_size", np.inf, "The size of train images [np.inf]")
 
-tf.app.flags.DEFINE_string("dir_tag", "tanhforminist", "dir_tag for sample_dir and checkpoint_dir")
-tf.app.flags.DEFINE_string("result_dir", "/home/zmzhou/Desktop/Workspace/result/", "Where to save the checkpoint and sample")
+tf.app.flags.DEFINE_string("dir_tag", "z100", "dir_tag for sample_dir and checkpoint_dir")
+tf.app.flags.DEFINE_string("result_dir", "./result/", "Where to save the checkpoint and sample")
 tf.app.flags.DEFINE_boolean("is_train", True, "True for training, False for testing [False]")
 tf.app.flags.DEFINE_boolean("visualize", False, "True for visualizing, False for nothing [False]")
 tf.app.flags.DEFINE_boolean("b_loadcheckpoint", False, "b_loadcheckpoint")
@@ -26,7 +25,7 @@ tf.app.flags.DEFINE_float("beta1", 0.5, "Momentum term of adam [0.5]")
 tf.app.flags.DEFINE_float("d_learning_rate", 0.0002, "Learning rate of for adam")
 tf.app.flags.DEFINE_float("g_learning_rate", 0.0002, "Learning rate of for adam")
 
-tf.app.flags.DEFINE_integer("batch_size", 128, "The size of batch images")
+tf.app.flags.DEFINE_integer("batch_size", 64, "The size of batch images")
 tf.app.flags.DEFINE_integer("gf_dim", 128, "gf_dim")
 tf.app.flags.DEFINE_integer("df_dim", 64, "df_dim")
 tf.app.flags.DEFINE_integer("dfc_dim", 1024, "df_dim")

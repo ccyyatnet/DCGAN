@@ -7,6 +7,8 @@ from glob import glob
 from ops import *
 from utils import *
 
+import cv2
+
 class DataProvider(object):
     def __init__(self, config):
 
@@ -16,18 +18,12 @@ class DataProvider(object):
         elif config.dataset == 'imagenet':
             self.data = glob(os.path.join("./data/imagenet/ILSVRC2012/ILSVRC2012_img_train_t3/n*/*.JPEG"))
             print 'data len:', len(self.data)
-            np.random.shuffle(self.data)
-            self.len = len(self.data)
         elif config.dataset == 'celebA':
             self.data = glob(os.path.join("./data/celebA/img_align_celeba/*.jpg"))
             print 'data len:', len(self.data)
-            np.random.shuffle(self.data)
-            self.len = len(self.data)
         else:
             self.data = glob(os.path.join("./data/", config.dataset, "*.jpg"))
             print 'data len:', len(self.data)
-            np.random.shuffle(self.data)
-            self.len = len(self.data)
 
     def load_data(self, config, idx):
 
@@ -56,17 +52,9 @@ class DataProvider(object):
 
         return batch_images  # , batch_labels
 
-    def blit(self, dest, src, loc):
-        pos = [i if i >= 0 else None for i in loc]
-        neg = [-i if i < 0 else None for i in loc]
-        target = dest[[slice(i, None) for i in pos]]
-        src = src[[slice(i, j) for i, j in zip(neg, target.shape)]]
-        target[[slice(None, i) for i in src.shape]] = src
-        return dest
-
     def load_mnist(self, loadTest = False, useX32 = True):
 
-        data_dir = '/home/zmzhou/Desktop/Workspace/dataset/auto/mnist/'  # os.path.join("./data", config.dataset)
+        data_dir = './data/mnist/'  # os.path.join("./data", config.dataset)
 
         fd = open(os.path.join(data_dir, 'train-images-idx3-ubyte'))
         loaded = np.fromfile(file=fd, dtype=np.uint8)
@@ -163,14 +151,23 @@ class DCGAN(object):
 
         self.z = tf.placeholder(tf.float32, [config.batch_size, config.z_dim], name='z')
         self.images = tf.placeholder(tf.float32, [config.batch_size] + [config.image_size, config.image_size, config.c_dim], name='real_images')
+        #self.images_Y = tf.slice(self.images, [0,0,0,0], [-1, -1,-1,1])
+        self.images_Y, self.images_U, self.images_V = tf.unpack(self.images, axis=3)
+        print 'Y shape after split', self.images_Y.get_shape()
 
-        self.generate_image = self.generator(self.z, config=config)
+        #self.generate_image = self.generator(self.z, config=config) #old
+        self.generate_image_UV = self.generator_colorization(self.z, self.images_Y, config=config) #check if direct slice correct
+        self.generate_image = tf.concat(3, [self.images_Y, self.generate_image_UV])
+        #self.round_Y = tf.concat(3, [self.images_Y[1:], self.images_Y[0]])
+        #self.madefake_image = tf.concat(3, [self.images_Y, self.generate_image_UV])
 
         self.probs_real, self.logits_real = self.discriminator(self.images, config=config)
         self.probs_fake, self.logits_fake = self.discriminator(self.generate_image, reuse=True, config=config)
+        #self.probs_madefake, self.logits_madefake = self.discriminator(self.madefake_image, reuse=True, config=config)
 
         self.g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.ones([config.batch_size,1])))
         self.d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.zeros([config.batch_size,1])))
+        #self.d_loss_madefake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_madefake, tf.zeros([config.batch_size, 1])))
         self.d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_real, tf.ones([config.batch_size,1])))
         self.d_loss = self.d_loss_real + self.d_loss_fake
 
@@ -278,12 +275,13 @@ class DCGAN(object):
         print('Generator shape')
         print('z : ', z.get_shape())
 
-        curfdim = config.gf_dim
-        cursize = config.image_size // 2
+        curfdim = config.gf_dim #128
+        cursize = config.image_size // 2 #32
         while (cursize % 2 == 0 and cursize >= 8):
             cursize = cursize // 2
             curfdim *= 2
 
+        #1024*4*4
         zr = linear(z, curfdim * cursize * cursize, 'g_h0_lin', with_w=False)
         h0 = tf.reshape(zr, [-1, cursize, cursize, curfdim])
         h0 = tf.nn.relu(batch_norm(h0, "g_vbn_0"))
@@ -302,6 +300,38 @@ class DCGAN(object):
 
         h0 = deconv2d(h0, [config.batch_size, config.image_size, config.image_size, config.c_dim], name='g_h' + str(idx+1), with_w=False)
         out = tf.nn.tanh(h0)
+        print('out:', out.get_shape())
+
+        return out
+
+    def generator_colorization(self, z, image_Y, config=None):
+
+        print ('Init Colorization Generator with z:', z.get_shape())
+        s = config.image_size #64
+
+        # project z
+        h0 = linear(z, s * s, 'g_h0_lin', with_w=False)
+        # reshape 
+        h0 = tf.reshape(h0, [-1, s, s, 1])
+        # concat with Y
+        h0 = tf.concat(3, [image_Y, h0])
+        print 'h0 shape after concat:', h0.get_shape()
+        h0 = tf.nn.relu(batch_norm(h0, 'g_bn0'))
+
+        h1 = conv2d(h0, [config.batch_size, s, s, 32], d_h = 1, d_w = 1, name = 'g_h1_conv')
+        h1 = tf.nn.relu(batch_norm(h1, 'g_bn1'))
+
+        h2 = conv2d(h0, [config.batch_size, s, s, 64], d_h = 1, d_w = 1, name = 'g_h2_conv')
+        h2 = tf.nn.relu(batch_norm(h1, 'g_bn2'))
+
+        h3 = conv2d(h0, [config.batch_size, s, s, 64], d_h = 1, d_w = 1, name = 'g_h3_conv')
+        h3 = tf.nn.relu(batch_norm(h1, 'g_bn3'))
+
+        h4 = conv2d(h0, [config.batch_size, s, s, 32], d_h = 1, d_w = 1, name = 'g_h4_conv')
+        h4 = tf.nn.relu(batch_norm(h1, 'g_bn4'))
+
+        h5 = conv2d(h0, [config.batch_size, s, s, 2], d_h = 1, d_w = 1, name = 'g_h5_conv')
+        out = tf.nn.tanh(h5)
         print('out:', out.get_shape())
 
         return out
