@@ -30,7 +30,7 @@ def cvtYUV2RGB(image):
     cvt_matrix = np.array([[1, 1, 1],
                                                 [-0.00093, -0.3437, 1.77216],
                                                 [1.401687, -0.71417, 0.00099]],dtype = np.float32)
-    return [image - [0, 128, 128]].dot(cvt_matrix)
+    return (image - [0, 128, 128]).dot(cvt_matrix)
 
 def imread(path, is_grayscale = False):
     if (is_grayscale):
