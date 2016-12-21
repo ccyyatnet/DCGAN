@@ -316,19 +316,19 @@ class DCGAN(object):
         print 'h0 shape after concat:', h0.get_shape()
         h0 = tf.nn.relu(batch_norm(h0, 'g_bn0'))
 
-        h1 = conv2d(h0, [config.batch_size, s, s, 32], d_h = 1, d_w = 1, name = 'g_h1_conv')
+        h1 = conv2d(h0, 32, d_h = 1, d_w = 1, name = 'g_h1_conv')
         h1 = tf.nn.relu(batch_norm(h1, 'g_bn1'))
 
-        h2 = conv2d(h1, [config.batch_size, s, s, 64], d_h = 1, d_w = 1, name = 'g_h2_conv')
+        h2 = conv2d(h1, 64, d_h = 1, d_w = 1, name = 'g_h2_conv')
         h2 = tf.nn.relu(batch_norm(h2, 'g_bn2'))
 
-        h3 = conv2d(h2, [config.batch_size, s, s, 64], d_h = 1, d_w = 1, name = 'g_h3_conv')
+        h3 = conv2d(h2, 64, d_h = 1, d_w = 1, name = 'g_h3_conv')
         h3 = tf.nn.relu(batch_norm(h3, 'g_bn3'))
 
-        h4 = conv2d(h3, [config.batch_size, s, s, 32], d_h = 1, d_w = 1, name = 'g_h4_conv')
+        h4 = conv2d(h3, 32, d_h = 1, d_w = 1, name = 'g_h4_conv')
         h4 = tf.nn.relu(batch_norm(h4, 'g_bn4'))
 
-        h5 = conv2d(h4, [config.batch_size, s, s, 2], d_h = 1, d_w = 1, name = 'g_h5_conv')
+        h5 = conv2d(h4, 2, d_h = 1, d_w = 1, name = 'g_h5_conv')
         out = tf.nn.tanh(h5)
         print('out:', out.get_shape())
 
