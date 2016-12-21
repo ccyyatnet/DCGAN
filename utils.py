@@ -6,8 +6,7 @@ import math
 import json
 import random
 import pprint
-#import scipy.misc
-import cv2
+import scipy.misc
 import numpy as np
 from time import gmtime, strftime
 
@@ -21,13 +20,23 @@ def get_image(image_path, center_crop_size, is_crop=True, resize_w=64, is_graysc
 def save_images(images, size, image_path):
     return imsave(inverse_transform(images), size, image_path)
 
+def cvtRGB2YUV(image):
+    cvt_matrix = np.array([[0.299, -0.169, 0.5],
+                                                [0.587, -0.331, -0.419],
+                                                [0.114, 0.5, -0.081]], dtype = np.float32)
+    return image.dot(cvt_matrix) + [0, 128, 128]
+
+def cvtYUV2RGB(image):
+    cvt_matrix = np.array([[1, 1, 1],
+                                                [-0.00093, -0.3437, 1.77216],
+                                                [1.401687, -0.71417, 0.00099]],dtype = np.float32)
+    return [image - [0, 128, 128]].dot(cvt_matrix)
+
 def imread(path, is_grayscale = False):
     if (is_grayscale):
-        #return scipy.misc.imread(path, flatten = True).astype(np.float)
-        return cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+        return scipy.misc.imread(path, flatten = True).astype(np.float32)
     else:
-        #return scipy.misc.imread(path).astype(np.float)
-        return cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2YUV)
+        return cvtRGB2YUV(scipy.misc.imread(path).astype(np.float32))
 
 def merge(images, size):
     h, w = images.shape[1], images.shape[2]
@@ -35,13 +44,12 @@ def merge(images, size):
     for idx, image in enumerate(images):
         i = idx % size[1]
         j = idx // size[1]
-        img[j*h:j*h+h, i*w:i*w+w, :] = cv2.cvtColor(image, cv2.COLOR_YUV2BGR)
+        img[j*h:j*h+h, i*w:i*w+w, :] = cvtYUV2RGB(image)
 
     return img
 
 def imsave(images, size, path):
-    #return scipy.misc.imsave(path, merge(images, size))
-    cv2.imwrite(path, merge(images, size))
+    return scipy.misc.imsave(path, merge(images, size))
 
 def center_crop(x, crop_h, crop_w=None, resize_w=64): 
     h, w = x.shape[:2]
@@ -53,9 +61,7 @@ def center_crop(x, crop_h, crop_w=None, resize_w=64):
 
     j = int(round((h - crop_h)/2.))
     i = int(round((w - crop_w)/2.))
-    #return scipy.misc.imresize(x[j:j+crop_h, i:i+crop_w],
-    #                           [resize_w, resize_w])
-    return cv2.resize(x[j:j+crop_h, i:i+crop_w],
+    return scipy.misc.imresize(x[j:j+crop_h, i:i+crop_w],
                                [resize_w, resize_w])
 
 def transform(image, npx=64, is_crop=True, resize_w=64): #with resize

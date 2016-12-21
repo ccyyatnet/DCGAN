@@ -7,8 +7,6 @@ from glob import glob
 from ops import *
 from utils import *
 
-import cv2
-
 class DataProvider(object):
     def __init__(self, config):
 
