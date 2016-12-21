@@ -203,7 +203,8 @@ class DCGAN(object):
         d_optim = tf.train.AdamOptimizer(config.d_learning_rate, beta1=config.beta1).minimize(self.d_loss, var_list=self.d_vars)
         g_optim = tf.train.AdamOptimizer(config.g_learning_rate, beta1=config.beta1).minimize(self.g_loss, var_list=self.g_vars)
 
-        tf.global_variables_initializer().run()
+        #tf.global_variables_initializer().run()
+        tf.initialize_all_variables().run()
         self.writer = tf.train.SummaryWriter(config.result_dir + 'log/' + config.dataset + '_' + config.dir_tag, self.sess.graph)
 
         data = DataProvider(config)
@@ -330,7 +331,7 @@ class DCGAN(object):
 
         h5 = conv2d(h4, 2, d_h = 1, d_w = 1, name = 'g_h5_conv')
         out = tf.nn.tanh(h5)
-        print('out:', out.get_shape())
+        print 'generator out shape:', out.get_shape()
 
         return out
 
