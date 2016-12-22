@@ -243,7 +243,7 @@ class DCGAN(object):
 
                 # Update G network
                 for k_g in xrange(0, config.K_for_Gtrain):
-                    self.sess.run([g_optim], feed_dict={self.z: batch_z})
+                    self.sess.run([g_optim], feed_dict={self.z: batch_z, self.images: batch_images})
 
                 counter += 1
 
