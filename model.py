@@ -15,13 +15,16 @@ class DataProvider(object):
             self.len = len(self.data_X)
         elif config.dataset == 'imagenet':
             self.data = glob(os.path.join("./data/imagenet/ILSVRC2012/ILSVRC2012_img_train_t3/n*/*.JPEG"))
-            print 'data len:', len(self.data)
+            self.len = len(self.data)
+            print 'data len:', self.len
         elif config.dataset == 'celebA':
             self.data = glob(os.path.join("./data/celebA/img_align_celeba/*.jpg"))
-            print 'data len:', len(self.data)
+            self.len = len(self.data)
+            print 'data len:', self.len
         else:
             self.data = glob(os.path.join("./data/", config.dataset, "*.jpg"))
-            print 'data len:', len(self.data)
+            self.len = len(self.data)
+            print 'data len:', self.len
 
     def load_data(self, config, idx):
 
