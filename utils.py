@@ -44,12 +44,12 @@ def merge(images, size):
     for idx, image in enumerate(images):
         i = idx % size[1]
         j = idx // size[1]
-        img[j*h:j*h+h, i*w:i*w+w, :] = cvtYUV2RGB(image)
+        img[j*h:j*h+h, i*w:i*w+w, :] = image
 
     return img
 
 def imsave(images, size, path):
-    return scipy.misc.imsave(path, merge(images, size))
+    return scipy.misc.imsave(path, cvtYUV2RGB(merge(images, size)))
 
 def center_crop(x, crop_h, crop_w=None, resize_w=64): 
     h, w = x.shape[:2]
