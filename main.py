@@ -14,7 +14,7 @@ tf.app.flags.DEFINE_integer("center_crop_size", 108, "The width of the images pr
 tf.app.flags.DEFINE_boolean("is_crop", True, "True for training, False for testing [False]")
 tf.app.flags.DEFINE_integer("train_size", np.inf, "The size of train images [np.inf]")
 
-tf.app.flags.DEFINE_string("dir_tag", "z100", "dir_tag for sample_dir and checkpoint_dir")
+tf.app.flags.DEFINE_string("dir_tag", "z100_d1_g1", "dir_tag for sample_dir and checkpoint_dir")
 tf.app.flags.DEFINE_string("result_dir", "./result/", "Where to save the checkpoint and sample")
 tf.app.flags.DEFINE_boolean("is_train", True, "True for training, False for testing [False]")
 tf.app.flags.DEFINE_boolean("visualize", False, "True for visualizing, False for nothing [False]")
@@ -33,7 +33,7 @@ tf.app.flags.DEFINE_integer("gfc_dim", 1024, "df_dim")
 tf.app.flags.DEFINE_integer("z_dim", 100, "z_dim")
 tf.app.flags.DEFINE_integer("c_dim", 3, "c_dim")
 
-tf.app.flags.DEFINE_integer("K_for_Dtrain", 2, "K_for_Dtrain")
+tf.app.flags.DEFINE_integer("K_for_Dtrain", 1, "K_for_Dtrain")
 tf.app.flags.DEFINE_integer("K_for_Gtrain", 1, "K_for_Gtrain") # Run g_optim twice to make sure that d_loss does not go to zero (different from paper)
 
 tf.app.flags.DEFINE_integer("num_classes", 1, "num_classes")

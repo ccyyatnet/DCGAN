@@ -50,10 +50,7 @@ def merge(images, size):
     return img
 
 def imsave(images, size, path):
-    rgb = cvtYUV2RGB(merge(images, size))
-    #with open('./result/samples/celebA_z100/tmp2.pkl','w') as tmpfile:
-    #  cPickle.dump([images, rgb], tmpfile)
-    return scipy.misc.imsave(path, rgb)
+    return scipy.misc.imsave(path, cvtYUV2RGB(merge(images, size)))
 
 def center_crop(x, crop_h, crop_w=None, resize_w=64): 
     h, w = x.shape[:2]
