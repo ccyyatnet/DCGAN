@@ -2,7 +2,7 @@ from __future__ import division
 
 import os
 import time
-import scipy.misc
+import cPickle
 from glob import glob
 
 from ops import *
@@ -204,6 +204,8 @@ class DCGAN(object):
 
     def train(self, config):
 
+        tmpfile = open('{}/tmp.pkl'.format(config.sample_dir), 'w')
+
         d_optim = tf.train.AdamOptimizer(config.d_learning_rate, beta1=config.beta1).minimize(self.d_loss, var_list=self.d_vars)
         g_optim = tf.train.AdamOptimizer(config.g_learning_rate, beta1=config.beta1).minimize(self.g_loss, var_list=self.g_vars)
 
@@ -219,8 +221,7 @@ class DCGAN(object):
         print 'sample_images.shape:', sample_images.shape
         print 'sample_images.range:', sample_images.max(), sample_images.min()
         print 'sample_z.shape:', sample_z.shape
-        scipy.misc.imsave('{}/test_sample_image0_loaded.png'.format(config.sample_dir))
-        scipy.misc.imsave('{}/test_sample_image0_loaded.jpg'.format(config.sample_dir))
+        cPickle.dump(sample_images, tmpfile)
 
         save_size = int(math.sqrt(config.batch_size))
         save_images(sample_images[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:04d}.png'.format(config.sample_dir, 0, 0))
