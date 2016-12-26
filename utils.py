@@ -51,8 +51,8 @@ def merge(images, size):
 
 def imsave(images, size, path):
     rgb = cvtYUV2RGB(merge(images, size))
-    with open('./result/samples/celebA_z100/tmp2.pkl','w') as tmpfile:
-      cPickle.dump([images, rgb], tmpfile)
+    #with open('./result/samples/celebA_z100/tmp2.pkl','w') as tmpfile:
+    #  cPickle.dump([images, rgb], tmpfile)
     return scipy.misc.imsave(path, rgb)
 
 def center_crop(x, crop_h, crop_w=None, resize_w=64): 
@@ -76,7 +76,8 @@ def transform(image, npx=64, is_crop=True, resize_w=64): #with resize
     return np.array(cropped_image)/127.5 - 1. 
 
 def inverse_transform(images): 
-    return (images+1.)/2.
+    #return (images+1.)/2.
+    return (images+1.)*127.5
 
 def to_json(output_path, *layers):
     with open(output_path, "w") as layer_f:
