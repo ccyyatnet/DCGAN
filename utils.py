@@ -5,6 +5,7 @@ from __future__ import division
 import math
 import json
 import random
+import cPickle
 import pprint
 import scipy.misc
 import numpy as np
@@ -49,7 +50,10 @@ def merge(images, size):
     return img
 
 def imsave(images, size, path):
-    return scipy.misc.imsave(path, cvtYUV2RGB(merge(images, size)))
+    rgb = cvtYUV2RGB(merge(images, size))
+    with open('./result/samples/celebA_z100/tmp2.pkl','w') as tmpfile:
+      cPickle.dump([images, rgb], tmpfile)
+    return scipy.misc.imsave(path, rgb)
 
 def center_crop(x, crop_h, crop_w=None, resize_w=64): 
     h, w = x.shape[:2]

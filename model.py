@@ -2,6 +2,7 @@ from __future__ import division
 
 import os
 import time
+import scipy.misc
 from glob import glob
 
 from ops import *
@@ -215,8 +216,16 @@ class DCGAN(object):
         sample_images = data.load_data(config, 0)
         sample_z = np.random.uniform(-1, 1, size=(config.batch_size, config.z_dim))
 
+        print 'sample_images.shape:', sample_images.shape
+        print 'sample_images.range:', sample_images.max(), sample_images.min()
+        print 'sample_z.shape:', sample_z.shape
+        scipy.misc.imsave('{}/test_sample_image0_loaded.png'.format(config.sample_dir))
+        scipy.misc.imsave('{}/test_sample_image0_loaded.jpg'.format(config.sample_dir))
+
         save_size = int(math.sqrt(config.batch_size))
         save_images(sample_images[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:04d}.png'.format(config.sample_dir, 0, 0))
+
+        raw_input('pause')
 
         if config.b_loadcheckpoint:
             if self.load(config):
