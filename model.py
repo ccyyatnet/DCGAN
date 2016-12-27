@@ -50,8 +50,8 @@ class DataProvider(object):
 
             for dir_idx, dir_file in enumerate(batch_files):
                 img = scipy.misc.imread(dir_file)
-                scipy.misc.imsave('/home/yuncao/Documents/result/test/images_aftercvt/%d.png'%dir_idx, img)
-            with open('/home/yuncao/Documents/result/test/sample.pkl','w') as outfile:
+                scipy.misc.imsave('{}/raw_{}.png'.format(config.sample_dir,dir_idx), img)
+            with open('{}/sample.pkl'.format(config.sample_dir),'w') as outfile:
                 cPickle.dump((batch_files, batch_images),outfile)
             
             if (config.is_grayscale):
