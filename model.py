@@ -3,6 +3,7 @@ from __future__ import division
 import os
 import time
 import cPickle
+import scipy.misc
 from glob import glob
 
 from ops import *
@@ -46,6 +47,13 @@ class DataProvider(object):
             batch_files = self.data[idx * config.batch_size:(idx + 1) * config.batch_size]
             batch_images = [get_image(batch_file, config.center_crop_size, is_crop=config.is_crop, resize_w=config.image_size, is_grayscale=config.is_grayscale) for batch_file in
                             batch_files]
+
+            for dir_idx, dir_file in enumerate(batch_files):
+                img = scipy.misc.imread(dir_file)
+                scipy.misc.imsave('/home/yuncao/Documents/result/test/images_aftercvt/%d.png'%dir_idx, img)
+            with open('/home/yuncao/Documents/result/test/sample.pkl','w') as outfile:
+                cPickle.dump((batch_files, batch_images),outfile)
+            
             if (config.is_grayscale):
                 batch_images = np.array(batch_images).astype(np.float32)[:, :, :, None]
             else:
@@ -218,6 +226,8 @@ class DCGAN(object):
 
         save_size = int(math.sqrt(config.batch_size))
         save_images(sample_images[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:04d}.png'.format(config.sample_dir, 0, 0))
+
+        raw_input('pause')
 
         if config.b_loadcheckpoint:
             if self.load(config):
