@@ -262,7 +262,8 @@ class DCGAN(object):
 
                 print("Epoch: [%2d] [%4d/%4d] time: %4.4f, loss: %.8f, prob_real: %.8f, prob_fake: %.8f" % (
                     epoch, idx, batch_idxs, time.time() - start_time, _loss, _prob_real, _prob_fake))
-                log_txt.write('%d %d %d %.8f %.8% %.8f\n'%(epoch, idx, batch_idxs, _loss, _prob_real, _prob_fake))
+                #log_txt.write('%d %d %d %.8f %.8% %.8f\n'%(epoch, idx, batch_idxs, _loss, _prob_real, _prob_fake))
+                log_txt.write("{:d} {:d} {:d} {:.8f} {:.8f} {:.8f}\n".format(epoch, idx, batch_idxs, _loss, _prob_real, _prob_fake))
 
                 if np.mod(counter, 100) == 1:
                     save_size = int(math.sqrt(config.batch_size))
