@@ -51,8 +51,8 @@ class DataProvider(object):
             #for dir_idx, dir_file in enumerate(batch_files):
             #    img = scipy.misc.imread(dir_file)
             #    scipy.misc.imsave('{}/raw_{}.png'.format(config.sample_dir,dir_idx), img)
-            with open('{}/sample.pkl'.format(config.sample_dir),'w') as outfile:
-                cPickle.dump((batch_files, batch_images),outfile)
+            #with open('{}/sample.pkl'.format(config.sample_dir),'w') as outfile:
+            #    cPickle.dump((batch_files, batch_images),outfile)
             
             if (config.is_grayscale):
                 batch_images = np.array(batch_images).astype(np.float32)[:, :, :, None]
@@ -219,15 +219,17 @@ class DCGAN(object):
         tf.initialize_all_variables().run()
         self.writer = tf.train.SummaryWriter(config.result_dir + 'log/' + config.dataset + '_' + config.dir_tag, self.sess.graph)
 
+        log_txt = open(config.result_dir+'log/'+config.dataset+'_log.txt', 'w')
+
         data = DataProvider(config)
 
         sample_images = data.load_data(config, 0)
-        sample_z = np.random.uniform(-1, 1, size=(config.batch_size, config.z_dim))
+        sample_z1 = np.random.uniform(-1, 1, size=(config.batch_size, config.z_dim))
+        sample_z2 = np.random.uniform(-1, 1, size=(config.batch_size, config.z_dim))
+        sample_z3 = np.random.uniform(-1, 1, size=(config.batch_size, config.z_dim))
 
         save_size = int(math.sqrt(config.batch_size))
         save_images(sample_images[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:04d}.png'.format(config.sample_dir, 0, 0))
-
-        raw_input('pause')
 
         if config.b_loadcheckpoint:
             if self.load(config):
@@ -260,16 +262,33 @@ class DCGAN(object):
 
                 print("Epoch: [%2d] [%4d/%4d] time: %4.4f, loss: %.8f, prob_real: %.8f, prob_fake: %.8f" % (
                     epoch, idx, batch_idxs, time.time() - start_time, _loss, _prob_real, _prob_fake))
+                log_txt.write('%2d %4d %4d %.8f %.8% %.8f\n'%(epoch, idx, batch_idxs, _loss, _prob_real, _prob_fake))
 
                 if np.mod(counter, 100) == 1:
-                    _generate_image, _loss, _prob_real, _prob_fake = self.sess.run([self.generate_image, self.total_loss, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: sample_z, self.images: sample_images})
-
                     save_size = int(math.sqrt(config.batch_size))
-                    save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:04d}.png'.format(config.sample_dir, epoch, idx))
-                    print("[Sample] loss: %.8f, prob_real: %.8f, prob_fake: %.8f" % (_loss, _prob_real, _prob_fake))
+                    #z1
+                    _generate_image, _loss, _prob_real, _prob_fake = self.sess.run([self.generate_image, self.total_loss, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: sample_z1, self.images: sample_images})
+                    save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:04d}_z1.png'.format(config.sample_dir, epoch, idx))
+                    print("[Sample] loss z1: %.8f, prob_real: %.8f, prob_fake: %.8f" % (_loss, _prob_real, _prob_fake))
+                    log_txt.write('0 0 0 %.8f %.8f %.8f'%(_loss, _prob_real, _prob_fake))
+                    #z2
+                    _generate_image, _loss, _prob_real, _prob_fake = self.sess.run([self.generate_image, self.total_loss, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: sample_z2, self.images: sample_images})
+                    save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:04d}_z2.png'.format(config.sample_dir, epoch, idx))
+                    print("[Sample] loss z2: %.8f, prob_real: %.8f, prob_fake: %.8f" % (_loss, _prob_real, _prob_fake))
+                    log_txt.write('0 0 0 %.8f %.8f %.8f'%(_loss, _prob_real, _prob_fake))
+                    #z3
+                    _generate_image, _loss, _prob_real, _prob_fake = self.sess.run([self.generate_image, self.total_loss, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: sample_z3, self.images: sample_images})
+                    save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:04d}_z3.png'.format(config.sample_dir, epoch, idx))
+                    print("[Sample] loss z3: %.8f, prob_real: %.8f, prob_fake: %.8f" % (_loss, _prob_real, _prob_fake))
+                    log_txt.write('0 0 0 %.8f %.8f %.8f'%(_loss, _prob_real, _prob_fake))
+                    #save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:04d}.png'.format(config.sample_dir, epoch, idx))
+                    #print("[Sample] loss: %.8f, prob_real: %.8f, prob_fake: %.8f" % (_loss, _prob_real, _prob_fake))
 
                 if np.mod(counter, 500) == 2:
                     self.save(config, counter)
+
+                log_txt.flush()
+        log_txt.close()
 
     def discriminator(self, image, y=None, reuse=False, config=None):
         if reuse:

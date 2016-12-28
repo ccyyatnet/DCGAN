@@ -19,13 +19,13 @@ def cvtRGB2YUV(image):
     cvt_matrix = np.array([[0.299, -0.169, 0.5],
                                                 [0.587, -0.331, -0.419],
                                                 [0.114, 0.5, -0.081]], dtype = np.float32)
-    return image.dot(cvt_matrix) + [0, 128, 128]
+    return image.dot(cvt_matrix) + [0, 127.5, 127.5]
 
 def cvtYUV2RGB(image):
     cvt_matrix = np.array([[1, 1, 1],
                                                 [-0.00093, -0.3437, 1.77216],
                                                 [1.401687, -0.71417, 0.00099]],dtype = np.float32)
-    return (image - [0, 128, 128]).dot(cvt_matrix)
+    return (image - [0, 127.5, 127.5]).dot(cvt_matrix)
 
 ############## load ##################
 def get_image(image_path, center_crop_size, is_crop=True, resize_w=64, is_grayscale = False):
