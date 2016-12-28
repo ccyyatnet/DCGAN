@@ -48,9 +48,9 @@ class DataProvider(object):
             batch_images = [get_image(batch_file, config.center_crop_size, is_crop=config.is_crop, resize_w=config.image_size, is_grayscale=config.is_grayscale) for batch_file in
                             batch_files]
 
-            for dir_idx, dir_file in enumerate(batch_files):
-                img = scipy.misc.imread(dir_file)
-                scipy.misc.imsave('{}/raw_{}.png'.format(config.sample_dir,dir_idx), img)
+            #for dir_idx, dir_file in enumerate(batch_files):
+            #    img = scipy.misc.imread(dir_file)
+            #    scipy.misc.imsave('{}/raw_{}.png'.format(config.sample_dir,dir_idx), img)
             with open('{}/sample.pkl'.format(config.sample_dir),'w') as outfile:
                 cPickle.dump((batch_files, batch_images),outfile)
             

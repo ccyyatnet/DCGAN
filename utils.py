@@ -37,7 +37,7 @@ def imread(path, is_grayscale = False):
     if (is_grayscale):
         return scipy.misc.imread(path, flatten = True).astype(np.float32)
     else:
-        return cvtRGB2YUV(scipy.misc.imread(path).astype(np.float32))
+        return scipy.misc.imread(path).astype(np.float32)
 
 def merge(images, size):
     h, w = images.shape[1], images.shape[2]
@@ -70,11 +70,12 @@ def transform(image, npx=64, is_crop=True, resize_w=64): #with resize
         cropped_image = center_crop(image, npx, resize_w=resize_w)
     else:
         cropped_image = image
+    image = cvtRGB2YUV(image)
     return np.array(cropped_image)/127.5 - 1. 
 
 def inverse_transform(images): 
     #return (images+1.)/2.
-    return (images+1.)*127.5
+    return (images+1.)*127.5 
 
 def to_json(output_path, *layers):
     with open(output_path, "w") as layer_f:
