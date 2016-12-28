@@ -15,12 +15,6 @@ pp = pprint.PrettyPrinter()
 
 get_stddev = lambda x, k_h, k_w: 1/math.sqrt(k_w*k_h*x.get_shape()[-1])
 
-def get_image(image_path, center_crop_size, is_crop=True, resize_w=64, is_grayscale = False):
-    return transform(imread(image_path, is_grayscale), center_crop_size, is_crop, resize_w)
-
-def save_images(images, size, image_path):
-    return imsave(inverse_transform(images), size, image_path)
-
 def cvtRGB2YUV(image):
     cvt_matrix = np.array([[0.299, -0.169, 0.5],
                                                 [0.587, -0.331, -0.419],
@@ -33,24 +27,23 @@ def cvtYUV2RGB(image):
                                                 [1.401687, -0.71417, 0.00099]],dtype = np.float32)
     return (image - [0, 128, 128]).dot(cvt_matrix)
 
+############## load ##################
+def get_image(image_path, center_crop_size, is_crop=True, resize_w=64, is_grayscale = False):
+    return transform(imread(image_path, is_grayscale), center_crop_size, is_crop, resize_w)
+
 def imread(path, is_grayscale = False):
     if (is_grayscale):
         return scipy.misc.imread(path, flatten = True).astype(np.float32)
     else:
         return scipy.misc.imread(path).astype(np.float32)
 
-def merge(images, size):
-    h, w = images.shape[1], images.shape[2]
-    img = np.zeros((h * size[0], w * size[1], 3))
-    for idx, image in enumerate(images):
-        i = idx % size[1]
-        j = idx // size[1]
-        img[j*h:j*h+h, i*w:i*w+w, :] = image
-
-    return img
-
-def imsave(images, size, path):
-    return scipy.misc.imsave(path, cvtYUV2RGB(merge(images, size)))
+def transform(image, npx=64, is_crop=True, resize_w=64): #with resize
+    if is_crop:
+        cropped_image = center_crop(image, npx, resize_w=resize_w)
+    else:
+        cropped_image = image
+    cropped_image = cvtRGB2YUV(cropped_image)
+    return np.array(cropped_image)/127.5 - 1. 
 
 def center_crop(x, crop_h, crop_w=None, resize_w=64): 
     h, w = x.shape[:2]
@@ -65,18 +58,28 @@ def center_crop(x, crop_h, crop_w=None, resize_w=64):
     return scipy.misc.imresize(x[j:j+crop_h, i:i+crop_w],
                                [resize_w, resize_w])
 
-def transform(image, npx=64, is_crop=True, resize_w=64): #with resize
-    if is_crop:
-        cropped_image = center_crop(image, npx, resize_w=resize_w)
-    else:
-        cropped_image = image
-    image = cvtRGB2YUV(image)
-    return np.array(cropped_image)/127.5 - 1. 
+############# save ######################
+def save_images(images, size, image_path):
+    return imsave(inverse_transform(images), size, image_path)
 
 def inverse_transform(images): 
     #return (images+1.)/2.
     return (images+1.)*127.5 
 
+def merge(images, size):
+    h, w = images.shape[1], images.shape[2]
+    img = np.zeros((h * size[0], w * size[1], 3))
+    for idx, image in enumerate(images):
+        i = idx % size[1]
+        j = idx // size[1]
+        img[j*h:j*h+h, i*w:i*w+w, :] = image
+
+    return img
+
+def imsave(images, size, path):
+    return scipy.misc.imsave(path, cvtYUV2RGB(merge(images, size)))
+
+########### tools ################
 def to_json(output_path, *layers):
     with open(output_path, "w") as layer_f:
         lines = ""
