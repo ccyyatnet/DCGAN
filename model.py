@@ -447,10 +447,36 @@ class DCGAN(object):
         '''
 
         test_image_idx = 0
-        print 'test image idx:', test_image_idx
+        print 'Test image idx:', test_image_idx
         test_image = data.load_one_data(config, test_image_idx, save = True)
         test_image_batch = np.array([test_image for i in range(config.batch_size)])
-        test_z_origin = np.random.uniform(-1, 1, size=config.z_dim)
+        #test_z_origin = np.random.uniform(-1, 1, size=config.z_dim)
+
+        ##test one z
+        test_z_origin = np.array([-1.     , -1.     ,  1.     ,  1.     ,  1.     , -1.     ,
+               -1.     ,  1.     , -1.     ,  1.     , -1.     ,  1.     ,
+               -1.     ,  1.     , -1.     ,  1.     ,  1.     , -1.     ,
+               -1.     ,  1.     ,  1.     ,  1.     ,  1.     , -0.53125,
+               -1.     ,  1.     ,  0.90625,  1.     ,  1.     ,  0.6875 ,
+                1.     ,  0.59375,  0.875  ,  1.     , -1.     ,  1.     ,
+               -1.     , -0.90625, -1.     , -1.     , -1.     ,  1.     ,
+                0.75   , -0.96875, -1.     , -1.     , -1.     , -1.     ,
+               -0.6875 ,  1.     , -1.     ,  1.     ,  1.     ,  1.     ,
+               -1.     , -1.     , -1.     ,  1.     , -1.     ,  1.     ,
+                1.     ,  1.     ,  1.     ,  1.     , -0.375  , -1.     ,
+                1.     ,  1.     ,  0.59375, -1.     , -1.     ,  1.     ,
+                1.     , -1.     ,  1.     ,  1.     ,  0.375  , -1.     ,
+               -0.75   , -1.     , -1.     , -1.     , -1.     , -1.     ,
+               -0.5    ,  1.     , -1.     , -1.     ,  1.     , -1.     ,
+              -1.     ,  1.     , -0.8125 ,  1.     ,  0.5    ,  0.5    ,
+               1.     , -1.     , -1.     ,  1.     ], dtype=np.float32)
+        test_z_batch = np.array([test_z_origin for i in range(config.batch_size)])
+        generate_image, probs_real, probs_fake = self.sess.run([self.generate_image, self.probs_real, self.probs_fake], feed_dict={self.z: test_z_batch, self.images: test_image_batch})
+        save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_{:06d}_fixZ.png'.format(config.sample_dir, test_image_idx))
+        print 'Real:', probs_real
+        print 'Fake:', probs_fake
+            
+        '''
         save_result_prob_real = []
         save_result_prob_fake = []
         for z_idx in range(config.z_dim):
@@ -462,6 +488,9 @@ class DCGAN(object):
             save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_{:06d}_{:04d}.png'.format(config.sample_dir, test_image_idx, z_idx))
             save_result_prob_real.append(probs_real)
             save_result_prob_fake.append(probs_fake)
+        print 'Test done.'
 
         with open(config.result_dir+'log/'+config.dataset+'_test_result.pkl', 'w') as outfile:
             cPickle.dump((test_image, test_z_origin, save_result_prob_real, save_result_prob_fake), outfile)
+        print 'Save done.'
+        '''
