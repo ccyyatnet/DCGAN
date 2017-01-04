@@ -415,6 +415,7 @@ class DCGAN(object):
 
         model_dir = "%s_%s_%s" % (config.dataset, config.batch_size, config.image_size)
         checkpoint_dir = os.path.join(config.checkpoint_dir, model_dir)
+        print 'checkpoint_dir:', checkpoint_dir
 
         ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
         if ckpt and ckpt.model_checkpoint_path:
