@@ -14,13 +14,13 @@ tf.app.flags.DEFINE_integer("center_crop_size", 108, "The width of the images pr
 tf.app.flags.DEFINE_boolean("is_crop", True, "True for training, False for testing [False]")
 tf.app.flags.DEFINE_integer("train_size", np.inf, "The size of train images [np.inf]")
 
-tf.app.flags.DEFINE_string("dir_tag", "z100_d1_g1_new", "dir_tag for sample_dir and checkpoint_dir")
+tf.app.flags.DEFINE_string("dir_tag", "z100_d1_g1_test", "dir_tag for sample_dir and checkpoint_dir")
 tf.app.flags.DEFINE_string("result_dir", "./result/", "Where to save the checkpoint and sample")
-tf.app.flags.DEFINE_boolean("is_train", True, "True for training, False for testing [False]")
+tf.app.flags.DEFINE_boolean("is_train", False, "True for training, False for testing [False]")
 tf.app.flags.DEFINE_boolean("visualize", False, "True for visualizing, False for nothing [False]")
 tf.app.flags.DEFINE_boolean("b_loadcheckpoint", False, "b_loadcheckpoint")
 
-tf.app.flags.DEFINE_integer("epoch", 25, "Epoch to train [25]")
+tf.app.flags.DEFINE_integer("epoch", 20, "Epoch to train [25]")
 tf.app.flags.DEFINE_float("beta1", 0.5, "Momentum term of adam [0.5]")
 tf.app.flags.DEFINE_float("d_learning_rate", 0.0002, "Learning rate of for adam")
 tf.app.flags.DEFINE_float("g_learning_rate", 0.0002, "Learning rate of for adam")
@@ -79,7 +79,11 @@ def main(_):
             if FLAGS.is_train:
                 dcgan.train(FLAGS)
             else:
-                dcgan.load(FLAGS)
+                if dcgan.load(FLAGS):
+                    print(" [*] Load SUCCESS")
+                    dcgan.test(FLAGS)
+                else:
+                    print(" [!] Load failed...")
 
         #if FLAGS.visualize:
         #    OPTION = 2

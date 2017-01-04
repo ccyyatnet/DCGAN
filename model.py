@@ -5,6 +5,7 @@ import time
 import cPickle
 import scipy.misc
 from glob import glob
+#import matplotlib.pyplot as plt
 
 from ops import *
 from utils import *
@@ -61,6 +62,14 @@ class DataProvider(object):
             #batch_labels = np.zeros([config.batch_size, config.y_dim])
 
         return batch_images  # , batch_labels
+
+    def load_one_data(self, config, idx, save=False):
+        if idx<0:
+            idx = np.random.randint(0, self.len)
+        image = get_image(self.data[idx], config.center_crop_size, is_crop=config.is_crop, resize_w=config.image_size, is_grayscale=config.is_grayscale)
+        if save:
+            save_image(image, '{}/test_{:06d}_origin.png'.format(config.sample_dir, idx))
+        return image
 
     def load_mnist(self, loadTest = False, useX32 = True):
 
@@ -411,6 +420,47 @@ class DCGAN(object):
         if ckpt and ckpt.model_checkpoint_path:
             ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
             self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
+            print 'ckpt_name:', ckpt_name
             return True
         else:
             return False
+
+    def test(self, config=None):
+        print(" [*] Testing model...")
+        #plt.ion()
+
+        data = DataProvider(config)
+        save_size = int(math.sqrt(config.batch_size))
+
+        '''#interactive version
+        test_images = data.load_data(config, 0)
+        show_size = int(math.sqrt(config.batch_size))
+        show_images(test_images, [show_size, show_size], window_idx=0, close = False)
+        select_idx = int(input('Choose an image(0-%d):'%config.batch_size))
+        while(select_idx<0 or select_idx>=config.batch_size):
+            select_idx = int(input('Wrong index!\nChoose an image(0-%d):'%config.batch_size))
+        plt.close(0)
+        test_image = test_images[select_idx]
+        show_image(test_image, 'image_origin', window_idx=1, close = False)
+        test_z_origin = np.random.uniform(-1, 1, size=(1, config.z_dim))
+        '''
+
+        test_image_idx = 0
+        print 'test image idx:', test_image_idx
+        test_image = data.load_one_data(config, test_image_idx, save = True)
+        test_image_batch = np.array([test_image for i in range(config.batch_size)])
+        test_z_origin = np.random.uniform(-1, 1, size=config.z_dim)
+        save_result_prob_real = []
+        save_result_prob_fake = []
+        for z_idx in range(config.z_dim):
+            print 'Alter z[%d]\r'%z_idx,
+            test_z_batch = np.array([test_z_origin for i in range(config.batch_size)])
+            test_z_batch[:, z_idx] = np.arange(-1.,1.,2./config.batch_size, np.float32)
+
+            generate_image, prob_real, prob_fake = self.sess.run([self.generate_image, self.prob_real, self.prob_fake], feed_dict={self.z: test_z_batch, self.images: test_image_batch})
+            save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_{:06d}_{:04d}.png'.format(config.sample_dir, test_image_idx, z_idx))
+            save_result_prob_real.append(prob_real)
+            save_result_prob_fake.append(prob_fake)
+
+        with open(config.result_dir+'log/'+config.dataset+'_test_result.pkl', 'w') as outfile:
+            cPickle.dump((test_image, test_z_origin, save_result_prob_real, save_result_prob_fake), outfile)

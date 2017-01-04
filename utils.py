@@ -10,6 +10,7 @@ import pprint
 import scipy.misc
 import numpy as np
 from time import gmtime, strftime
+#import matplotlib.pyplot as plt
 
 pp = pprint.PrettyPrinter()
 
@@ -59,6 +60,27 @@ def center_crop(x, crop_h, crop_w=None, resize_w=64):
                                [resize_w, resize_w])
 
 ############# save ######################
+def show_image(image, image_name, window_idx, close = True):
+    plt.figure(window_idx)
+    plt.imshow(image)
+    plt.axis('off')
+    plt.title(image_name)
+    plt.show()
+    if close:
+      plt.close(window_idx)
+
+def show_images(images, size, window_idx, close=True):
+    plt.figure(window_idx)
+    merged_image = cvtYUV2RGB(merge(images, size))
+    plt.imshow(merged_image)
+    plt.axis('off')
+    plt.show()
+    if close:
+      plt.close(window_idx)
+
+def save_image(image, image_path):
+    return scipy.misc.imsave(image_path, cvtYUV2RGB(inverse_transform(image)))
+
 def save_images(images, size, image_path):
     return imsave(inverse_transform(images), size, image_path)
 
