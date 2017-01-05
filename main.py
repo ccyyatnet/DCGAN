@@ -48,6 +48,8 @@ tf.app.flags.DEFINE_boolean("use_vbn", False, "True for use_vbn")
 tf.app.flags.DEFINE_boolean("minibacth", False, "True for minibacth")
 tf.app.flags.DEFINE_boolean("add_hz", False, "True for add random z in each hidden layer, in generator")
 
+tf.app.flags.DEFINE_integer("test_image_idx", -1, "test_image_idx")
+
 FLAGS = tf.app.flags.FLAGS
 
 def main(_):
