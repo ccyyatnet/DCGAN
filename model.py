@@ -446,13 +446,13 @@ class DCGAN(object):
         test_z_origin = np.random.uniform(-1, 1, size=(1, config.z_dim))
         '''
 
-        test_image_idx = 0
+        test_image_idx = 1
         print 'Test image idx:', test_image_idx
         test_image = data.load_one_data(config, test_image_idx, save = True)
         test_image_batch = np.array([test_image for i in range(config.batch_size)])
-        #test_z_origin = np.random.uniform(-1, 1, size=config.z_dim)
+        test_z_origin = np.random.uniform(-1, 1, size=config.z_dim)
 
-        ##test one z
+        '''##test one z
         test_z_origin = np.array([-1.     , -1.     ,  1.     ,  1.     ,  1.     , -1.     ,
                -1.     ,  1.     , -1.     ,  1.     , -1.     ,  1.     ,
                -1.     ,  1.     , -1.     ,  1.     ,  1.     , -1.     ,
@@ -490,7 +490,7 @@ class DCGAN(object):
             save_result_prob_fake.append(probs_fake)
         print 'Test done.'
 
-        with open(config.result_dir+'log/'+config.dataset+'_test_result.pkl', 'w') as outfile:
+        with open(config.result_dir+'log/'+config.dataset+'_test_%06d.pkl'%(test_image_idx), 'w') as outfile:
             cPickle.dump((test_image, test_z_origin, save_result_prob_real, save_result_prob_fake), outfile)
         print 'Save done.'
-        '''
+        #'''
