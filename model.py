@@ -446,7 +446,8 @@ class DCGAN(object):
         test_z_origin = np.random.uniform(-1, 1, size=(1, config.z_dim))
         '''
 
-        test_image_idx = 1
+        test_image_idx = 3
+        os.mkdir('{}/{:06d}'.format(config.sample_dir, test_image_idx))
         print 'Test image idx:', test_image_idx
         test_image = data.load_one_data(config, test_image_idx, save = True)
         test_image_batch = np.array([test_image for i in range(config.batch_size)])
@@ -485,12 +486,12 @@ class DCGAN(object):
             test_z_batch[:, z_idx] = np.arange(-1.,1.,2./config.batch_size, np.float32)
 
             generate_image, probs_real, probs_fake = self.sess.run([self.generate_image, self.probs_real, self.probs_fake], feed_dict={self.z: test_z_batch, self.images: test_image_batch})
-            save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_{:06d}_{:04d}.png'.format(config.sample_dir, test_image_idx, z_idx))
+            save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/{:06d}/test_{:06d}_{:04d}.png'.format(config.sample_dir, test_image_idx, test_image_idx, z_idx))
             save_result_prob_real.append(probs_real)
             save_result_prob_fake.append(probs_fake)
         print 'Test done.'
 
-        with open(config.result_dir+'log/'+config.dataset+'_test_%06d.pkl'%(test_image_idx), 'w') as outfile:
+        with open('{}/{:06d}/test_{:06d}.pkl'.format(config.sample_dir, test_image_idx, test_image_idx), 'w') as outfile:
             cPickle.dump((test_image, test_z_origin, save_result_prob_real, save_result_prob_fake), outfile)
         print 'Save done.'
         #'''
