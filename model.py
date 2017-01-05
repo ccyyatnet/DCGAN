@@ -450,7 +450,7 @@ class DCGAN(object):
         print 'Test image idx:', test_image_idx
         save_dir = '{}/{:06d}'.format(config.sample_dir, test_image_idx)
         os.mkdir(save_dir)
-        test_image = data.load_one_data(config, test_image_idx, save = True)
+        test_image = data.load_one_data(config, test_image_idx)
         save_image(test_image, '{}/test_{:06d}_origin.png'.format(save_dir, test_image_idx))
         test_image_batch = np.array([test_image for i in range(config.batch_size)])
         test_z_origin = np.random.uniform(-1, 1, size=config.z_dim)
