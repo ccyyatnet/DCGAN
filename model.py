@@ -449,7 +449,7 @@ class DCGAN(object):
             test_image_idx = np.random.randint(0, data.len)
         print 'Test image idx:', test_image_idx
         save_dir = '{}/{:06d}'.format(config.sample_dir, test_image_idx)
-        if not os.path.exists(save_dir)
+        if not os.path.exists(save_dir):
             os.mkdir(save_dir)
         test_image = data.load_one_data(config, test_image_idx)
         save_image(test_image, '{}/test_{:06d}_origin.png'.format(save_dir, test_image_idx))
