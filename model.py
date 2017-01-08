@@ -490,9 +490,9 @@ class DCGAN(object):
 
             image_Y, image_U, image_V, generate_image, probs_real, probs_fake = self.sess.run([self.images_Y, self.images_U, self.images_V, self.generate_image, self.probs_real, self.probs_fake], feed_dict={self.z: test_z_batch, self.images: test_image_batch})
             #save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_{:06d}_{:04d}.png'.format(save_dir, test_image_idx, z_idx))
-            scipy.misc.imsave('/home/yuncao/Document/result/image_Y.png', inverse_transform(image_Y))
-            scipy.misc.imsave('/home/yuncao/Document/result/image_U.png', inverse_transform(image_U))
-            scipy.misc.imsave('/home/yuncao/Document/result/image_V.png', inverse_transform(image_V))
+            scipy.misc.imsave('/home/yuncao/Document/result/image_Y.png', inverse_transform(image_Y[0]))
+            scipy.misc.imsave('/home/yuncao/Document/result/image_U.png', inverse_transform(image_U[0]))
+            scipy.misc.imsave('/home/yuncao/Document/result/image_V.png', inverse_transform(image_V[0]))
 
             raw_input('stop')
             save_result_prob_real.append(probs_real)
