@@ -376,7 +376,7 @@ class DCGAN(object):
         h6 = tf.nn.relu(batch_norm(h6, 'g_bn6'))
 
         #h7 = conv2d(h4, 2, d_h = 1, d_w = 1, name = 'g_h5_conv')
-        out = tf.nn.tanh(h5)
+        out = tf.nn.tanh(h6)
         print 'generator out shape:', out.get_shape()
 
         return out
