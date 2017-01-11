@@ -83,7 +83,6 @@ def main(_):
             else:
                 if dcgan.load(FLAGS):
                     print(" [*] Load SUCCESS")
-                    raw_input('stop')
                     dcgan.test(FLAGS)
                 else:
                     print(" [!] Load failed...")

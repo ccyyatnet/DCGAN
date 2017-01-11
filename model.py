@@ -428,8 +428,8 @@ class DCGAN(object):
             latest_checkpoint = tf.train.latest_checkpoint(checkpoint_dir)
             print 'latest_checkpoint:', latest_checkpoint
             #ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
-            ckpt_name = 'DCGAN.model - 35502'
-            print 'ckpt_name:', ckpt_name
+            ckpt_name = 'DCGAN.model-35502'
+            print 'ckpt_path:', os.path.join(checkpoint_dir, ckpt_name)
             self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
             
             return True
