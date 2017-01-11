@@ -377,6 +377,7 @@ class DCGAN(object):
 
         #h7 = conv2d(h4, 2, d_h = 1, d_w = 1, name = 'g_h5_conv')
         out = tf.nn.tanh(h6)
+
         print 'generator out shape:', out.get_shape()
 
         return out
@@ -412,7 +413,8 @@ class DCGAN(object):
         if not os.path.exists(checkpoint_dir):
             os.makedirs(checkpoint_dir)
 
-        self.saver.save(self.sess, os.path.join(checkpoint_dir, model_name), global_step=step)
+        this_checkpoint_dir = self.saver.save(self.sess, os.path.join(checkpoint_dir, model_name), global_step=step)
+        print 'Saved checkpoint_dir:', this_checkpoint_dir
 
     def load(self, config=None):
         print(" [*] Reading checkpoints...")
@@ -421,11 +423,16 @@ class DCGAN(object):
         checkpoint_dir = os.path.join(config.checkpoint_dir, model_dir)
         print 'checkpoint_dir:', checkpoint_dir
 
-        ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
+        ckpt = tf.train.get_checkpoint_state(checkpoint_dir)  #get_checkpoint_state() returns CheckpointState Proto
         if ckpt and ckpt.model_checkpoint_path:
+            last_checkpoints = self.saver.last_checkpoints()
+            print 'last_checkpoints:', last_checkpoints
+            latest_checkpoint = tf.train.latest_checkpoint(checkpoint_dir)
+            print 'latest_checkpoint:', latest_checkpoint
             ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
-            self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
             print 'ckpt_name:', ckpt_name
+            self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
+            
             return True
         else:
             return False
