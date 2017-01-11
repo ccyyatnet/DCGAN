@@ -367,7 +367,7 @@ class DCGAN(object):
         h3 = tf.nn.relu(batch_norm(h3, 'g_bn3'))
 
         h4 = conv2d(h3, 32, d_h = 1, d_w = 1, name = 'g_h4_conv')
-        h4 = tf.nn.relu(batch_norm(h3, 'g_bn4'))
+        h4 = tf.nn.relu(batch_norm(h4, 'g_bn4'))
 
         h5 = conv2d(h4, 2, d_h = 1, d_w = 1, name = 'g_h5_conv')
         out = tf.nn.tanh(h5)
