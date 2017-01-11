@@ -494,13 +494,12 @@ class DCGAN(object):
             test_z_batch = np.array([test_z_origin for i in range(config.batch_size)])
             test_z_batch[:, z_idx] = np.arange(-1.,1.,2./config.batch_size, np.float32)
 
-            image_Y, image_U, image_V, generate_image, probs_real, probs_fake = self.sess.run([self.images_Y, self.images_U, self.images_V, self.generate_image, self.probs_real, self.probs_fake], feed_dict={self.z: test_z_batch, self.images: test_image_batch})
-            #save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_{:06d}_{:04d}.png'.format(save_dir, test_image_idx, z_idx))
-            scipy.misc.imsave('{}/image_Y.png'.format(config.sample_dir), inverse_transform(image_Y[0].squeeze()))
-            scipy.misc.imsave('{}/image_U.png'.format(config.sample_dir), inverse_transform(image_U[0].squeeze()))
-            scipy.misc.imsave('{}/image_V.png'.format(config.sample_dir), inverse_transform(image_V[0].squeeze()))
+            generate_image, probs_real, probs_fake = self.sess.run([self.images_Y, self.images_U, self.images_V, self.generate_image, self.probs_real, self.probs_fake], feed_dict={self.z: test_z_batch, self.images: test_image_batch})
+            save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_{:06d}_{:04d}.png'.format(save_dir, test_image_idx, z_idx))
+            #scipy.misc.imsave('{}/image_Y.png'.format(config.sample_dir), inverse_transform(image_Y[0].squeeze()))
+            #scipy.misc.imsave('{}/image_U.png'.format(config.sample_dir), inverse_transform(image_U[0].squeeze()))
+            #scipy.misc.imsave('{}/image_V.png'.format(config.sample_dir), inverse_transform(image_V[0].squeeze()))
 
-            raw_input('stop')
             save_result_prob_real.append(probs_real)
             save_result_prob_fake.append(probs_fake)
         print 'Test done.'
