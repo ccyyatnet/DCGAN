@@ -425,7 +425,7 @@ class DCGAN(object):
 
         ckpt = tf.train.get_checkpoint_state(checkpoint_dir)  #get_checkpoint_state() returns CheckpointState Proto
         if ckpt and ckpt.model_checkpoint_path:
-            last_checkpoints = self.saver.last_checkpoints()
+            last_checkpoints = self.saver.last_checkpoints
             print 'last_checkpoints:', last_checkpoints
             latest_checkpoint = tf.train.latest_checkpoint(checkpoint_dir)
             print 'latest_checkpoint:', latest_checkpoint
