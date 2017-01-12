@@ -512,7 +512,7 @@ class DCGAN(object):
         print 'Save done.'
         #'''
 
-def test_random_z(self, config=None):
+    def test_random_z(self, config=None):
         data = DataProvider(config)
         save_size = int(math.sqrt(config.batch_size))
         test_images = []
