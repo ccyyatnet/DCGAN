@@ -49,6 +49,8 @@ tf.app.flags.DEFINE_boolean("minibacth", False, "True for minibacth")
 tf.app.flags.DEFINE_boolean("add_hz", False, "True for add random z in each hidden layer, in generator")
 
 tf.app.flags.DEFINE_integer("test_image_idx", -1, "test_image_idx")
+tf.app.flags.DEFINE_boolean("random_z", True, "test random z")
+tf.app.flags.DEFINE_integer("number_of_test_images", 64, "number_of_test_images")
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -82,10 +84,15 @@ def main(_):
                 dcgan.train(FLAGS)
             else:
                 if dcgan.load(FLAGS):
-                    print(" [*] Load SUCCESS")
-                    dcgan.test(FLAGS)
+                    print " [*] Load SUCCESS"
+                    if FLAGS.random_z:
+                        print " [*] Test RANDOM Z"
+                        dcgan.test_random_z(FLAGS)
+                    else:
+                        print " [*] Test Z"
+                        dcgan.test_z(FLAGS)
                 else:
-                    print(" [!] Load failed...")
+                    print " [!] Load failed..."
 
         #if FLAGS.visualize:
         #    OPTION = 2

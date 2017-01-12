@@ -430,10 +430,8 @@ class DCGAN(object):
         else:
             return False
 
-    def test(self, config=None):
-        print(" [*] Testing model...")
+    def test_z(self, config=None):
         #plt.ion()
-
         data = DataProvider(config)
         save_size = int(math.sqrt(config.batch_size))
 
@@ -460,7 +458,7 @@ class DCGAN(object):
         test_image = data.load_one_data(config, test_image_idx)
         save_image(test_image, '{}/test_{:06d}_origin.png'.format(save_dir, test_image_idx))
         test_image_batch = np.array([test_image for i in range(config.batch_size)])
-        test_z_origin = np.random.uniform(-1, 1, size=config.z_dim)
+        
 
         '''##test one z
         test_z_origin = np.array([-1.     , -1.     ,  1.     ,  1.     ,  1.     , -1.     ,
@@ -489,6 +487,8 @@ class DCGAN(object):
         '''
         save_result_prob_real = []
         save_result_prob_fake = []
+
+        test_z_origin = np.random.uniform(-1, 1, size=config.z_dim)
         for z_idx in range(config.z_dim):
             print 'Alter z[%d]\r'%z_idx,
             test_z_batch = np.array([test_z_origin for i in range(config.batch_size)])
@@ -504,9 +504,40 @@ class DCGAN(object):
 
             save_result_prob_real.append(probs_real)
             save_result_prob_fake.append(probs_fake)
+        
         print 'Test done.'
 
         with open('{}/test_{:06d}.pkl'.format(save_dir, test_image_idx), 'w') as outfile:
             cPickle.dump((test_image, test_z_origin, save_result_prob_real, save_result_prob_fake), outfile)
         print 'Save done.'
         #'''
+
+def test_random_z(self, config=None):
+        data = DataProvider(config)
+        save_size = int(math.sqrt(config.batch_size))
+        test_images = []
+        test_z_batch = np.random.uniform(-1, 1, size=(config.batch_size, config.z_dim))
+        save_result_prob_real = []
+        save_result_prob_fake = []
+
+        print "Randomly choose {:%d} images".format(config.number_of_test_images)
+        test_idxs = range(data.len)
+        np.random.shuffle(test_idxs)
+        for test_idx, test_image_idx in enumerate(test_idxs[:config.number_of_test_images]):
+            print 'Testing image {}, index {} ...'.format(test_idx, test_image_idx)
+            test_image = data.load_one_data(config, test_image_idx)
+            test_images.append(test_image[0].squeeze())
+            save_image(test_image, '{}/test_random_{:06d}_origin.png'.format(config.sample_dir, test_image_idx))
+            test_image_batch = np.array([test_image for i in range(config.batch_size)])
+
+            generate_image, probs_real, probs_fake = self.sess.run([self.generate_image, self.probs_real, self.probs_fake], feed_dict={self.z: test_z_batch, self.images: test_image_batch})
+            save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_random_{:06d}.png'.format(config.sample_dir, test_image_idx))
+
+            save_result_prob_real.append(probs_real)
+            save_result_prob_fake.append(probs_fake)
+        
+        print 'Test done.'
+
+        with open('{}/test_ramdom.pkl'.format(config.sample_dir), 'w') as outfile:
+            cPickle.dump((test_images, test_z_batch, save_result_prob_real, save_result_prob_fake), outfile)
+        print 'Save done.'
