@@ -520,7 +520,7 @@ class DCGAN(object):
         save_result_prob_real = []
         save_result_prob_fake = []
 
-        print "Randomly choose {:%d} images".format(config.number_of_test_images)
+        print "Randomly choose %d images"%(config.number_of_test_images)
         test_idxs = range(data.len)
         np.random.shuffle(test_idxs)
         for test_idx, test_image_idx in enumerate(test_idxs[:config.number_of_test_images]):
