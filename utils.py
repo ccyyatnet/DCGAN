@@ -38,9 +38,9 @@ def imread(path, is_grayscale = False):
     else:
         return scipy.misc.imread(path).astype(np.float32)
 
-def transform(image, npx=64, is_crop=True, resize_w=64): #with resize
+def transform(image, center_crop_size=64, is_crop=True, resize_w=64): #with resize
     if is_crop:
-        cropped_image = center_crop(image, npx, resize_w=resize_w)
+        cropped_image = center_crop(image, center_crop_size, resize_w=resize_w)
     else:
         cropped_image = image
     cropped_image = cvtRGB2YUV(cropped_image)

@@ -24,6 +24,11 @@ class DataProvider(object):
             self.data = glob(os.path.join("./data/celebA/img_align_celeba/*.jpg"))
             self.len = len(self.data)
             print 'data len:', self.len
+        elif config.dataset == 'lsun':
+            with open('data/lsun/bedroom_train.lst', 'r') as lstfile:
+                self.data = ['data/lsun/bedroom_train/'+imgname for imgname in lstfile.read().split()]
+            self.len = len(self.data)
+            print 'data len:', self.len 
         else:
             self.data = glob(os.path.join("./data/", config.dataset, "*.jpg"))
             self.len = len(self.data)
