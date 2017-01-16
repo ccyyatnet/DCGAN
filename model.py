@@ -241,7 +241,7 @@ class DCGAN(object):
         sample_z3 = np.random.uniform(-1, 1, size=(config.batch_size, config.z_dim))
 
         save_size = int(math.sqrt(config.batch_size))
-        save_images(sample_images[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:04d}.png'.format(config.sample_dir, 0, 0))
+        save_images(sample_images[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:05d}.png'.format(config.sample_dir, 0, 0))
 
         if config.b_loadcheckpoint:
             if self.load(config):
@@ -272,31 +272,31 @@ class DCGAN(object):
 
                 counter += 1
 
-                print("Epoch: [%2d] [%4d/%4d] time: %4.4f, loss: %.8f, prob_real: %.8f, prob_fake: %.8f" % (
+                print("Epoch: [%2d] [%5d/%5d] time: %4.4f, loss: %.8f, prob_real: %.8f, prob_fake: %.8f" % (
                     epoch, idx, batch_idxs, time.time() - start_time, _loss, _prob_real, _prob_fake))
                 log_txt.write("{:d} {:d} {:d} {:.8f} {:.8f} {:.8f}\n".format(epoch, idx, batch_idxs, _loss, _prob_real, _prob_fake))
 
-                if np.mod(counter, 100) == 1:
+                if np.mod(counter, 200) == 1:
                     save_size = int(math.sqrt(config.batch_size))
                     #z1
                     _generate_image, _loss, _prob_real, _prob_fake = self.sess.run([self.generate_image, self.total_loss, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: sample_z1, self.images: sample_images})
-                    save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:04d}_z1.png'.format(config.sample_dir, epoch, idx))
+                    save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:05d}_z1.png'.format(config.sample_dir, epoch, idx))
                     print("[Sample] loss z1: %.8f, prob_real: %.8f, prob_fake: %.8f" % (_loss, _prob_real, _prob_fake))
                     log_txt.write("0 0 -1 {:.8f} {:.8f} {:.8f}\n".format(_loss, _prob_real, _prob_fake))
                     #z2
                     _generate_image, _loss, _prob_real, _prob_fake = self.sess.run([self.generate_image, self.total_loss, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: sample_z2, self.images: sample_images})
-                    save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:04d}_z2.png'.format(config.sample_dir, epoch, idx))
+                    save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:05d}_z2.png'.format(config.sample_dir, epoch, idx))
                     print("[Sample] loss z2: %.8f, prob_real: %.8f, prob_fake: %.8f" % (_loss, _prob_real, _prob_fake))
                     log_txt.write("0 0 -2 {:.8f} {:.8f} {:.8f}\n".format(_loss, _prob_real, _prob_fake))
                     #z3
                     _generate_image, _loss, _prob_real, _prob_fake = self.sess.run([self.generate_image, self.total_loss, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: sample_z3, self.images: sample_images})
-                    save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:04d}_z3.png'.format(config.sample_dir, epoch, idx))
+                    save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:05d}_z3.png'.format(config.sample_dir, epoch, idx))
                     print("[Sample] loss z3: %.8f, prob_real: %.8f, prob_fake: %.8f" % (_loss, _prob_real, _prob_fake))
                     log_txt.write("0 0 -3 {:.8f} {:.8f} {:.8f}\n".format(_loss, _prob_real, _prob_fake))
                     #save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:04d}.png'.format(config.sample_dir, epoch, idx))
                     #print("[Sample] loss: %.8f, prob_real: %.8f, prob_fake: %.8f" % (_loss, _prob_real, _prob_fake))
 
-                if np.mod(counter, 500) == 2:
+                if np.mod(counter, 1000) == 2:
                     self.save(config, counter)
 
                 log_txt.flush()
