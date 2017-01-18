@@ -34,9 +34,9 @@ def get_image(image_path, center_crop_size, is_crop=True, resize_w=64, is_graysc
 
 def imread(path, is_grayscale = False):
     if (is_grayscale):
-        return scipy.misc.imread(path, flatten = True).astype(np.float32)
+        return scipy.misc.imread(path, flatten = True)
     else:
-        return scipy.misc.imread(path).astype(np.float32)
+        return scipy.misc.imread(path)
 
 def transform(image, center_crop_size=64, is_crop=True, resize_w=64): #with resize
     if is_crop:
