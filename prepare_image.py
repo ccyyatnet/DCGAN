@@ -9,7 +9,7 @@ save_dir = 'data/lsun_%d/bedroom_train/'%resize_w
 
 with open('data/lsun/bedroom_train.lst', 'r') as lstfile:
     image_list = lstfile.read().split()
-print 'data len:', image_list
+print 'data len:', len(image_list)
 
 stime = time.time()
 for count, image_name in enumerate(image_list):
