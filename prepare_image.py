@@ -18,9 +18,9 @@ for count, image_name in enumerate(image_list):
     crop_size = min(h, w)
     j = int(round((h - crop_size)/2.))
     i = int(round((w - crop_size)/2.))
-    image_RGB = scipy.misc.imresize(x[j:j+crop_size, i:i+crop_size],
+    image_RGB_resize = scipy.misc.imresize(image_RGB[j:j+crop_size, i:i+crop_size],
                                [resize_w, resize_w])
-    scipy.misc.imsave(save_dir+image_name, image_RGB)
+    scipy.misc.imsave(save_dir+image_name, image_RGB_resize)
     if count%100 == 0: 
         print '{:06d}, {:.2f}s\r'.format(count, time.time()-stime), 
         sys.stdout.flush()
