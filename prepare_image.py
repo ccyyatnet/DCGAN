@@ -22,7 +22,7 @@ for count, image_name in enumerate(image_list):
         print Exception,":",e
         print 'BAD image:',image_name
         continue
-    if len(image_RGB.shape)==3 and image_RGB.shape[3]==3:
+    if len(image_RGB.shape)==3 and image_RGB.shape[2]==3:
         valid_count+=1
     else:
         print 'BAD shape:',image_name
