@@ -11,9 +11,22 @@ with open('data/lsun/bedroom_train.lst', 'r') as lstfile:
     image_list = lstfile.read().split()
 print 'data len:', len(image_list)
 
+outfile = open('data/lsun_%d/bedroom_train_valid.lst','w')
+
+valid_count = 0
 stime = time.time()
 for count, image_name in enumerate(image_list):
-    image_RGB = scipy.misc.imread(read_dir+image_name)
+    try:
+        image_RGB = scipy.misc.imread(read_dir+image_name)
+    except Exception, e:
+        print Exception,":",e
+        print 'BAD image:',image_name
+        continue
+    if len(image_RGB.shape)==3 and image_RGB.shape[3]==3:
+        valid_count+=1
+    else:
+        print 'BAD shape:',image_name
+        continue
     h, w = image_RGB.shape[:2]
     crop_size = min(h, w)
     j = int(round((h - crop_size)/2.))
@@ -26,3 +39,5 @@ for count, image_name in enumerate(image_list):
         sys.stdout.flush()
         raw_input('pause')
 print 'Done in %.2f'%time.time()-stime
+print 'Valid %d/%d'%(valid_count, len(image_list))
+outfile.close()
