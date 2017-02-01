@@ -11,7 +11,7 @@ with open('data/lsun/bedroom_train.lst', 'r') as lstfile:
     image_list = lstfile.read().split()
 print 'data len:', len(image_list)
 
-outfile = open('data/lsun_%d/bedroom_train_valid.lst','w')
+outfile = open('data/lsun_%d/bedroom_train_valid.lst','w')%resize_w
 
 valid_count = 0
 stime = time.time()
