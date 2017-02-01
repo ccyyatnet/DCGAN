@@ -248,6 +248,7 @@ class DCGAN(object):
                 print(" [*] Load SUCCESS")
             else:
                 print(" [!] Load failed...")
+                return
 
         counter = 1
         start_time = time.time()
