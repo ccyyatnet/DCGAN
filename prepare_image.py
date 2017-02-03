@@ -20,12 +20,12 @@ for count, image_name in enumerate(image_list):
         image_RGB = scipy.misc.imread(read_dir+image_name)
     except Exception, e:
         print Exception,":",e
-        print 'BAD image %d:'%count,image_name
+        print '\n\tBAD image %d:'%count,image_name
         continue
     if len(image_RGB.shape)==3 and image_RGB.shape[2]==3:
         valid_count+=1
     else:
-        print 'BAD shape %d:'%count,image_name
+        print '\n\tBAD shape %d:'%count,image_name, image_RGB.shape 
         continue
     h, w = image_RGB.shape[:2]
     crop_size = min(h, w)
@@ -34,6 +34,7 @@ for count, image_name in enumerate(image_list):
     image_RGB_resize = scipy.misc.imresize(image_RGB[j:j+crop_size, i:i+crop_size],
                                [resize_w, resize_w])
     scipy.misc.imsave(save_dir+image_name, image_RGB_resize)
+    outfile.write(image_name+'\n')
     if count%100 == 0: 
         print '\r{:06d}, {:.2f}s'.format(count, time.time()-stime), 
         sys.stdout.flush()
