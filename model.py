@@ -25,8 +25,8 @@ class DataProvider(object):
             self.len = len(self.data)
             print 'data len:', self.len
         elif config.dataset == 'lsun':
-            with open('data/lsun/bedroom_train.lst', 'r') as lstfile:
-                self.data = ['data/lsun/bedroom_train/'+imgname for imgname in lstfile.read().split()]
+            with open('data/lsun_64/bedroom_train_valid.lst', 'r') as lstfile:
+                self.data = ['data/lsun_64/bedroom_train/'+imgname for imgname in lstfile.read().split()]
             self.len = len(self.data)
             print 'data len:', self.len 
         else:
@@ -51,20 +51,8 @@ class DataProvider(object):
             batch_labels = self.data_y[idx * config.batch_size:(idx + 1) * config.batch_size]
         else:
             batch_files = self.data[idx * config.batch_size:(idx + 1) * config.batch_size]
-            batch_images = [get_image(batch_file, config.center_crop_size, is_crop=config.is_crop, resize_w=config.image_size, is_grayscale=config.is_grayscale) for batch_file in
-                            batch_files]
-
-            #for dir_idx, dir_file in enumerate(batch_files):
-            #    img = scipy.misc.imread(dir_file)
-            #    scipy.misc.imsave('{}/raw_{}.png'.format(config.sample_dir,dir_idx), img)
-            #with open('{}/sample.pkl'.format(config.sample_dir),'w') as outfile:
-            #    cPickle.dump((batch_files, batch_images),outfile)
-            
-            if (config.is_grayscale):
-                batch_images = np.array(batch_images).astype(np.float32)[:, :, :, None]
-            else:
-                batch_images = np.array(batch_images).astype(np.float32)
-            #batch_labels = np.zeros([config.batch_size, config.y_dim])
+            #batch_images = [get_image(batch_file, config.center_crop_size, is_crop=config.is_crop, resize_w=config.image_size, is_grayscale=config.is_grayscale) for batch_file in batch_files]
+            batch_images = np.array([get_image_faster(batch_file) for batch_file in batch_files], dtype=np.float32)
 
         return batch_images  # , batch_labels
 
@@ -73,53 +61,6 @@ class DataProvider(object):
             idx = np.random.randint(0, self.len)
         image = get_image(self.data[idx], config.center_crop_size, is_crop=config.is_crop, resize_w=config.image_size, is_grayscale=config.is_grayscale)
         return image
-
-    def load_mnist(self, loadTest = False, useX32 = True):
-
-        data_dir = './data/mnist/'  # os.path.join("./data", config.dataset)
-
-        fd = open(os.path.join(data_dir, 'train-images-idx3-ubyte'))
-        loaded = np.fromfile(file=fd, dtype=np.uint8)
-        trX = loaded[16:].reshape((60000, 28, 28, 1)).astype(np.float)
-
-        fd = open(os.path.join(data_dir, 'train-labels-idx1-ubyte'))
-        loaded = np.fromfile(file=fd, dtype=np.uint8)
-        trY = loaded[8:].reshape((60000)).astype(np.float)
-
-        if loadTest:
-            fd = open(os.path.join(data_dir, 't10k-images-idx3-ubyte'))
-            loaded = np.fromfile(file=fd, dtype=np.uint8)
-            teX = loaded[16:].reshape((10000, 28, 28, 1)).astype(np.float)
-
-            fd = open(os.path.join(data_dir, 't10k-labels-idx1-ubyte'))
-            loaded = np.fromfile(file=fd, dtype=np.uint8)
-            teY = loaded[8:].reshape((10000)).astype(np.float)
-
-            trY = np.asarray(trY)
-            teY = np.asarray(teY)
-
-            X = np.concatenate((trX, teX), axis=0)
-            Y = np.concatenate((trY, teY), axis=0)
-        else:
-            X = trX
-            Y = trY
-
-        seed = 547
-        np.random.seed(seed)
-        np.random.shuffle(X)
-        np.random.seed(seed)
-        np.random.shuffle(Y)
-
-        y_vec = np.zeros((len(Y), 10), dtype=np.float)
-        for i, label in enumerate(Y):
-            y_vec[i, int(Y[i])] = 1.0
-
-        if useX32:
-            X32 = np.zeros([len(X), 32, 32, 1])
-            X32[:,2:30,2:30] = X
-            X = X32
-
-        return X / 127.5 - 1.0, y_vec
 
     def read_and_decode(self, filename_queue):
 
@@ -258,13 +199,8 @@ class DCGAN(object):
             batch_idxs = min(data.len, config.train_size) // config.batch_size
             for idx in xrange(0, batch_idxs):
 
-                stime = time.time()
-
                 batch_images = data.load_data(config, idx)
                 batch_z = np.random.uniform(-1, 1, [config.batch_size, config.z_dim]).astype(np.float32)
-
-                print 'get data:', time.time()-stime
-                stime = time.time()
 
                 # Update D network
                 for k_d in xrange(0, config.K_for_Dtrain):
@@ -272,24 +208,13 @@ class DCGAN(object):
                     self.writer.add_summary(summary_str, counter)
                     # when running d_optim, basically the whole graph will be executed, so, we get summary and log info from here.
 
-                print 'update D:', time.time()-stime
-                stime = time.time()
-
                 # Update G network
                 for k_g in xrange(0, config.K_for_Gtrain):
                     self.sess.run([g_optim], feed_dict={self.z: batch_z, self.images: batch_images})
 
-                print 'update G:', time.time()-stime
-                stime = time.time()
-
-                counter += 1
-
                 print("Epoch: [%2d] [%5d/%5d] time: %4.4f, loss: %.8f, prob_real: %.8f, prob_fake: %.8f" % (
                     epoch, idx, batch_idxs, time.time() - start_time, _loss, _prob_real, _prob_fake))
                 log_txt.write("{:d} {:d} {:d} {:.8f} {:.8f} {:.8f}\n".format(epoch, idx, batch_idxs, _loss, _prob_real, _prob_fake))
-
-                print 'write log:', time.time()-stime
-                stime = time.time()
 
                 if np.mod(counter, 200) == 1:
                     save_size = int(math.sqrt(config.batch_size))
@@ -311,18 +236,11 @@ class DCGAN(object):
                     #save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:04d}.png'.format(config.sample_dir, epoch, idx))
                     #print("[Sample] loss: %.8f, prob_real: %.8f, prob_fake: %.8f" % (_loss, _prob_real, _prob_fake))
 
-                print 'save samples:', time.time()-stime
-                stime = time.time()
-
-                if np.mod(counter, 1000) == 2:
+                if np.mod(counter, 1000) == 0:
                     self.save(config, counter)
 
-                print 'save model:', time.time()-stime
-                stime = time.time()
-
                 log_txt.flush()
-
-                raw_input('batch %d done'%counter)
+                counter += 1
 
         log_txt.close()
 
