@@ -39,6 +39,8 @@ for count, image_name in enumerate(image_list):
         print '\r{:06d}, {:.2f}s'.format(count, time.time()-stime), 
         sys.stdout.flush()
         #raw_input('pause')
+    if count==500000:
+        break
 print 'Done in %.2f'%time.time()-stime
 print 'Valid %d/%d'%(valid_count, len(image_list))
 outfile.close()

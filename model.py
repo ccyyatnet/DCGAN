@@ -258,8 +258,13 @@ class DCGAN(object):
             batch_idxs = min(data.len, config.train_size) // config.batch_size
             for idx in xrange(0, batch_idxs):
 
+                stime = time.time()
+
                 batch_images = data.load_data(config, idx)
                 batch_z = np.random.uniform(-1, 1, [config.batch_size, config.z_dim]).astype(np.float32)
+
+                print 'get data:', time.time()-stime
+                stime = time.time()
 
                 # Update D network
                 for k_d in xrange(0, config.K_for_Dtrain):
@@ -267,15 +272,24 @@ class DCGAN(object):
                     self.writer.add_summary(summary_str, counter)
                     # when running d_optim, basically the whole graph will be executed, so, we get summary and log info from here.
 
+                print 'update D:', time.time()-stime
+                stime = time.time()
+
                 # Update G network
                 for k_g in xrange(0, config.K_for_Gtrain):
                     self.sess.run([g_optim], feed_dict={self.z: batch_z, self.images: batch_images})
+
+                print 'update G:', time.time()-stime
+                stime = time.time()
 
                 counter += 1
 
                 print("Epoch: [%2d] [%5d/%5d] time: %4.4f, loss: %.8f, prob_real: %.8f, prob_fake: %.8f" % (
                     epoch, idx, batch_idxs, time.time() - start_time, _loss, _prob_real, _prob_fake))
                 log_txt.write("{:d} {:d} {:d} {:.8f} {:.8f} {:.8f}\n".format(epoch, idx, batch_idxs, _loss, _prob_real, _prob_fake))
+
+                print 'write log:', time.time()-stime
+                stime = time.time()
 
                 if np.mod(counter, 200) == 1:
                     save_size = int(math.sqrt(config.batch_size))
@@ -297,10 +311,19 @@ class DCGAN(object):
                     #save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:04d}.png'.format(config.sample_dir, epoch, idx))
                     #print("[Sample] loss: %.8f, prob_real: %.8f, prob_fake: %.8f" % (_loss, _prob_real, _prob_fake))
 
+                print 'save samples:', time.time()-stime
+                stime = time.time()
+
                 if np.mod(counter, 1000) == 2:
                     self.save(config, counter)
 
+                print 'save model:', time.time()-stime
+                stime = time.time()
+
                 log_txt.flush()
+
+                raw_input('batch %d done'%counter)
+
         log_txt.close()
 
     def discriminator(self, image, y=None, reuse=False, config=None):
