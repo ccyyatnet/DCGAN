@@ -59,7 +59,8 @@ class DataProvider(object):
     def load_one_data(self, config, idx):
         if idx<0:
             idx = np.random.randint(0, self.len)
-        image = get_image(self.data[idx], config.center_crop_size, is_crop=config.is_crop, resize_w=config.image_size, is_grayscale=config.is_grayscale)
+        #image = get_image(self.data[idx], config.center_crop_size, is_crop=config.is_crop, resize_w=config.image_size, is_grayscale=config.is_grayscale)
+        image = get_image_faster(self.data[idx])
         return image
 
     def read_and_decode(self, filename_queue):
@@ -299,27 +300,32 @@ class DCGAN(object):
         h0 = linear(z, s * s, 'g_h0_lin', with_w=False)
         # reshape 
         h0 = tf.reshape(h0, [-1, s, s, 1])
-        # concat with Y
-        h0 = tf.concat(3, [image_Y, h0])
-        print 'h0 shape after concat:', h0.get_shape()
         h0 = tf.nn.relu(batch_norm(h0, 'g_bn0'))
-
-        h1 = conv2d(h0, 128, k_h = 7, k_w = 7, d_h = 1, d_w = 1, name = 'g_h1_conv')
+        
+        # concat with Y
+        h1 = tf.concat(3, [image_Y, h0])
+        #print 'h0 shape after concat:', h0.get_shape()
+        h1 = conv2d(h1, 128, k_h = 7, k_w = 7, d_h = 1, d_w = 1, name = 'g_h1_conv')
         h1 = tf.nn.relu(batch_norm(h1, 'g_bn1'))
 
-        h2 = conv2d(h1, 64, k_h = 5, k_w = 5, d_h = 1, d_w = 1, name = 'g_h2_conv')
+        h2 = tf.concat(3, [image_Y, h1])
+        h2 = conv2d(h2, 64, k_h = 5, k_w = 5, d_h = 1, d_w = 1, name = 'g_h2_conv')
         h2 = tf.nn.relu(batch_norm(h2, 'g_bn2'))
-
-        h3 = conv2d(h2, 64, k_h = 5, k_w = 5, d_h = 1, d_w = 1, name = 'g_h3_conv')
+        
+        h3 = tf.concat(3, [image_Y, h2])
+        h3 = conv2d(h3, 64, k_h = 5, k_w = 5, d_h = 1, d_w = 1, name = 'g_h3_conv')
         h3 = tf.nn.relu(batch_norm(h3, 'g_bn3'))
 
-        h4 = conv2d(h3, 64, k_h = 5, k_w = 5,  d_h = 1, d_w = 1, name = 'g_h4_conv')
+        h4 = tf.concat(3, [image_Y, h3])
+        h4 = conv2d(h4, 64, k_h = 5, k_w = 5,  d_h = 1, d_w = 1, name = 'g_h4_conv')
         h4 = tf.nn.relu(batch_norm(h4, 'g_bn4'))
 
-        h5 = conv2d(h4, 32, k_h = 5, k_w = 5,  d_h =1, d_w = 1, name = 'g_h5_conv')
+        h5 = tf.concat(3, [image_Y, h4])
+        h5 = conv2d(h5, 32, k_h = 5, k_w = 5,  d_h =1, d_w = 1, name = 'g_h5_conv')
         h5 = tf.nn.relu(batch_norm(h5, 'g_bn5'))
-
-        h6 = conv2d(h5, 2, k_h = 5, k_w = 5,  d_h = 1, d_w = 1, name = 'g_h6_conv')
+        
+        h6 = tf.concat(3, [image_Y, h5])
+        h6 = conv2d(h6, 2, k_h = 5, k_w = 5,  d_h = 1, d_w = 1, name = 'g_h6_conv')
         out = tf.nn.tanh(h6)
 
         print 'generator out shape:', out.get_shape()
