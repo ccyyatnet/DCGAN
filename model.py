@@ -498,9 +498,9 @@ class DCGAN(object):
             test_image_batch = np.array([test_image for i in range(config.batch_size)], dtype=np.uint8)
             print test_image_batch.dtype
 
-            test_the_image_batch = data.load_the_data(config, 0)
+            #test_the_image_batch = data.load_the_data(config, 0)
 
-            generate_image, probs_real, probs_fake, avg_prob_real, avg_prob_fake = self.sess.run([self.generate_image, self.probs_real, self.probs_fake, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: test_z_batch, self.images: test_the_image_batch})
+            generate_image, probs_real, probs_fake, avg_prob_real, avg_prob_fake = self.sess.run([self.generate_image, self.probs_real, self.probs_fake, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: test_z_batch, self.images: test_image_batch})
             print "prob_real: %.8f, prob_fake: %.8f" % (avg_prob_real, avg_prob_fake)
             save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_random_{:06d}.png'.format(config.sample_dir, test_image_idx))
 
