@@ -496,6 +496,7 @@ class DCGAN(object):
             test_images.append(test_image[0].squeeze())
             save_image(test_image, '{}/test_random_{:06d}_origin.png'.format(config.sample_dir, test_image_idx))
             test_image_batch = np.array([test_image for i in range(config.batch_size)])
+            print test_image_batch.dtype
 
             test_the_image_batch = data.load_the_data(config, 0)
 
