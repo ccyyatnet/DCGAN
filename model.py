@@ -182,8 +182,7 @@ class DCGAN(object):
 
         data = DataProvider(config)
 
-        #sample_images = data.load_data(config, 0)
-        sample_images = data.load_the_data(config, 0)
+        sample_images = data.load_data(config, 0)
         sample_z1 = np.random.uniform(-1, 1, size=(config.batch_size, config.z_dim))
         sample_z2 = np.random.uniform(-1, 1, size=(config.batch_size, config.z_dim))
         sample_z3 = np.random.uniform(-1, 1, size=(config.batch_size, config.z_dim))
@@ -243,8 +242,6 @@ class DCGAN(object):
                     #save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:04d}.png'.format(config.sample_dir, epoch, idx))
                     #print("[Sample] loss: %.8f, prob_real: %.8f, prob_fake: %.8f" % (_loss, _prob_real, _prob_fake))
 
-                    raw_input("pause")
-
                 if np.mod(counter, 1000) == 0:
                     self.save(config, counter)
 
@@ -257,10 +254,11 @@ class DCGAN(object):
         if reuse:
             tf.get_variable_scope().reuse_variables()
 
-        h0 = lrelu(conv2d(image, config.df_dim, name='d_h0_conv'))
-        h1 = lrelu(batch_norm(conv2d(h0, config.df_dim * 2, name='d_h1_conv'), 'd_bn1'))
-        h2 = lrelu(batch_norm(conv2d(h1, config.df_dim * 4, name='d_h2_conv'), 'd_bn2'))
-        h3 = lrelu(batch_norm(conv2d(h2, config.df_dim * 8, name='d_h3_conv'), 'd_bn3'))
+        h0 = lrelu(conv2d(image, config.df_dim, k_h=3, k_w=3, name='d_h0_conv'))
+        h1 = lrelu(batch_norm(conv2d(h0, config.df_dim * 2, k_h=3, k_w=3, name='d_h1_conv'), 'd_bn1'))
+        h2 = lrelu(batch_norm(conv2d(h1, config.df_dim * 4, k_h=3, k_w=3, name='d_h2_conv'), 'd_bn2'))
+        h3 = lrelu(batch_norm(conv2d(h2, config.df_dim * 8, k_h=3, k_w=3, name='d_h3_conv'), 'd_bn3'))
+
         h4 = linear(tf.reshape(h3, [config.batch_size, -1]), 1, 'd_h3_lin')
 
         return tf.nn.sigmoid(h4), h4
