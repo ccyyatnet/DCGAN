@@ -56,6 +56,10 @@ class DataProvider(object):
 
         return batch_images  # , batch_labels
 
+    def load_the_data(self, config, idx):
+        batch_files = self.data[idx * config.batch_size:(idx + 1) * config.batch_size]
+        return np.array([get_image_faster(batch_file) for batch_file in batch_files], dtype=np.float32)
+
     def load_one_data(self, config, idx):
         if idx<0:
             idx = np.random.randint(0, self.len)
@@ -178,7 +182,8 @@ class DCGAN(object):
 
         data = DataProvider(config)
 
-        sample_images = data.load_data(config, 0)
+        #sample_images = data.load_data(config, 0)
+        sample_images = data.load_the_data(config, 0)
         sample_z1 = np.random.uniform(-1, 1, size=(config.batch_size, config.z_dim))
         sample_z2 = np.random.uniform(-1, 1, size=(config.batch_size, config.z_dim))
         sample_z3 = np.random.uniform(-1, 1, size=(config.batch_size, config.z_dim))
@@ -237,6 +242,8 @@ class DCGAN(object):
                     log_txt.write("0 0 -3 {:.8f} {:.8f} {:.8f}\n".format(_loss, _prob_real, _prob_fake))
                     #save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:04d}.png'.format(config.sample_dir, epoch, idx))
                     #print("[Sample] loss: %.8f, prob_real: %.8f, prob_fake: %.8f" % (_loss, _prob_real, _prob_fake))
+
+                    raw_input("pause")
 
                 if np.mod(counter, 1000) == 0:
                     self.save(config, counter)
@@ -451,7 +458,8 @@ class DCGAN(object):
             test_z_batch = np.array([test_z_origin for i in range(config.batch_size)])
             test_z_batch[:, z_idx] = np.arange(-1.,1.,2./config.batch_size, np.float32)
 
-            generate_image, probs_real, probs_fake = self.sess.run([self.generate_image, self.probs_real, self.probs_fake], feed_dict={self.z: test_z_batch, self.images: test_image_batch})
+            generate_image, probs_real, probs_fake, avg_prob_real, avg_prob_fake = self.sess.run([self.generate_image, self.probs_real, self.probs_fake, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: test_z_batch, self.images: test_image_batch})
+            print "prob_real: %.8f, prob_fake: %.8f" % (avg_prob_real, avg_prob_fake)
             save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_{:06d}_{:04d}.png'.format(save_dir, test_image_idx, z_idx))
 
             #images_Y, images_U, images_V, generate_image, probs_real, probs_fake = self.sess.run([self.images_Y, self.images_U, self.images_V, self.generate_image, self.probs_real, self.probs_fake], feed_dict={self.z: test_z_batch, self.images: test_image_batch})
@@ -489,7 +497,9 @@ class DCGAN(object):
             save_image(test_image, '{}/test_random_{:06d}_origin.png'.format(config.sample_dir, test_image_idx))
             test_image_batch = np.array([test_image for i in range(config.batch_size)])
 
-            generate_image, probs_real, probs_fake, avg_prob_real, avg_prob_fake = self.sess.run([self.generate_image, self.probs_real, self.probs_fake, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: test_z_batch, self.images: test_image_batch})
+            test_the_image_batch = data.load_the_data(config, 0)
+
+            generate_image, probs_real, probs_fake, avg_prob_real, avg_prob_fake = self.sess.run([self.generate_image, self.probs_real, self.probs_fake, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: test_z_batch, self.images: test_the_image_batch})
             print "prob_real: %.8f, prob_fake: %.8f" % (avg_prob_real, avg_prob_fake)
             save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_random_{:06d}.png'.format(config.sample_dir, test_image_idx))
 
