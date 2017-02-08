@@ -129,10 +129,11 @@ class DCGAN(object):
         self.probs_fake, self.logits_fake = self.discriminator(self.generate_image, reuse=True, config=config)
         #self.probs_madefake, self.logits_madefake = self.discriminator(self.madefake_image, reuse=True, config=config)
 
-        self.g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.ones([config.batch_size,1])))
+        self.g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.ones([config.batch_size,1])*config.smooth))
+        #self.d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.ones([config.batch_size,1])*(1.-config.smooth)))
         self.d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.zeros([config.batch_size,1])))
         #self.d_loss_madefake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_madefake, tf.zeros([config.batch_size, 1])))
-        self.d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_real, tf.ones([config.batch_size,1])))
+        self.d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_real, tf.ones([config.batch_size,1])*config.smooth))
         self.d_loss = self.d_loss_real + self.d_loss_fake
 
         self.total_loss = self.d_loss + self.g_loss
@@ -173,7 +174,7 @@ class DCGAN(object):
         tf.initialize_all_variables().run()
         self.writer = tf.train.SummaryWriter(config.result_dir + 'log/' + config.dataset + '_' + config.dir_tag, self.sess.graph)
 
-        log_txt = open(config.result_dir+'log/'+config.dataset+'_log.txt', 'w')
+        log_txt = open(config.result_dir+'log/'+config.dataset+'_'+config.dir_tag+'_log.txt', 'w')
 
         data = DataProvider(config)
 
@@ -471,6 +472,7 @@ class DCGAN(object):
     def test_random_z(self, config=None):
         data = DataProvider(config)
         save_size = int(math.sqrt(config.batch_size))
+        test_image_idxs = []
         test_images = []
         test_z_batch = np.random.uniform(-1, 1, size=(config.batch_size, config.z_dim))
         save_result_prob_real = []
@@ -482,11 +484,13 @@ class DCGAN(object):
         for test_idx, test_image_idx in enumerate(test_idxs[:config.number_of_test_images]):
             print 'Testing image {}, index {} ...'.format(test_idx, test_image_idx)
             test_image = data.load_one_data(config, test_image_idx)
+            test_image_idxs.append(test_image_idx)
             test_images.append(test_image[0].squeeze())
             save_image(test_image, '{}/test_random_{:06d}_origin.png'.format(config.sample_dir, test_image_idx))
             test_image_batch = np.array([test_image for i in range(config.batch_size)])
 
-            generate_image, probs_real, probs_fake = self.sess.run([self.generate_image, self.probs_real, self.probs_fake], feed_dict={self.z: test_z_batch, self.images: test_image_batch})
+            generate_image, probs_real, probs_fake, avg_prob_real, avg_prob_fake = self.sess.run([self.generate_image, self.probs_real, self.probs_fake, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: test_z_batch, self.images: test_image_batch})
+            print "prob_real: %.8f, prob_fake: %.8f" % (avg_prob_real, avg_prob_fake)
             save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_random_{:06d}.png'.format(config.sample_dir, test_image_idx))
 
             save_result_prob_real.append(probs_real)
@@ -494,6 +498,6 @@ class DCGAN(object):
         
         print 'Test done.'
 
-        with open('{}/test_ramdom.pkl'.format(config.sample_dir), 'w') as outfile:
-            cPickle.dump((test_images, test_z_batch, save_result_prob_real, save_result_prob_fake), outfile)
+        with open('{}/test_random.pkl'.format(config.sample_dir), 'w') as outfile:
+            cPickle.dump((test_image_idxs, test_images, test_z_batch, save_result_prob_real, save_result_prob_fake), outfile)
         print 'Save done.'
