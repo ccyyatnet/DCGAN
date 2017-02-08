@@ -33,7 +33,7 @@ def get_image(image_path, center_crop_size, is_crop=True, resize_w=64, is_graysc
     return transform(imread(image_path, is_grayscale), center_crop_size, is_crop, resize_w)
 
 def get_image_faster(image_path):
-    return np.array(cvtRGB2YUV(imread(image_path)))/127.5 - 1.
+    return np.array(cvtRGB2YUV(imread(image_path)), dtype=np.float32)/127.5 - 1.
 
 def imread(path, is_grayscale = False):
     if (is_grayscale):
