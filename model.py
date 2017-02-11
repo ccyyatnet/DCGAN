@@ -547,5 +547,5 @@ class DCGAN(object):
         print 'Test done.'
 
         with open('{}/test_fixed_prob.pkl'.format(config.sample_dir), 'w') as outfile:
-            cPickle.dump((test_image_idxs, test_images, test_z_batch, save_result_prob_real, save_result_prob_fake), outfile)
+            cPickle.dump((test_image_idxs, test_images, test_z_batches, save_result_prob_real, save_result_prob_fake), outfile)
         print 'Save done.'
