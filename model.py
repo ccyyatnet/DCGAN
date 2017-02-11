@@ -503,7 +503,7 @@ class DCGAN(object):
             print "prob_real: %.8f, prob_fake: %.8f" % (avg_prob_real, avg_prob_fake)
             generate_image, probs_real, probs_fake, avg_prob_real, avg_prob_fake = self.sess.run([self.generate_image, self.probs_real, self.probs_fake, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: test_z_batch, self.images: test_the_image_batch})
             print "prob_real: %.8f, prob_fake: %.8f" % (avg_prob_real, avg_prob_fake)
-            #save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_random_{:06d}.png'.format(config.sample_dir, test_image_idx))
+            save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_random_{:06d}.png'.format(config.sample_dir, test_image_idx))
 
             save_result_prob_real.append(probs_real)
             save_result_prob_fake.append(probs_fake)
@@ -539,6 +539,8 @@ class DCGAN(object):
             print 'Round',test_round_idx, 
             generate_image, probs_real, probs_fake, avg_prob_real, avg_prob_fake = self.sess.run([self.generate_image, self.probs_real, self.probs_fake, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: test_z_batchs[test_round_idx], self.images: test_image_batch})
             print "prob_real: %.8f, prob_fake: %.8f" % (avg_prob_real, avg_prob_fake)
+            save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_fixed_round_{:03d}.png'.format(config.sample_dir, test_round_idx))
+
             save_result_prob_real.append(probs_real)
             save_result_prob_fake.append(probs_fake)
         
