@@ -535,7 +535,7 @@ class DCGAN(object):
         save_result_prob_fake = []
 
         print "Testing fixed %d images..."%config.batch_size
-        for test_round_idx in range(config):
+        for test_round_idx in range(config.batch_size):
             print 'Round',test_round_idx, 
             generate_image, probs_real, probs_fake, avg_prob_real, avg_prob_fake = self.sess.run([self.generate_image, self.probs_real, self.probs_fake, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: test_z_batchs[test_round_idx], self.images: test_image_batch})
             print "prob_real: %.8f, prob_fake: %.8f" % (avg_prob_real, avg_prob_fake)
