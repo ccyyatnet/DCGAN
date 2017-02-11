@@ -525,7 +525,7 @@ class DCGAN(object):
             test_image = data.load_one_data(config, test_image_idx)
             test_images.append(test_image)
         test_image_batch = np.array(test_images, dtype=np.float32)
-        save_image(test_image_batch, '{}/test_fixed_origin.png'.format(config.sample_dir))
+        save_images(test_image_batch,[save_size, save_size] , '{}/test_fixed_origin.png'.format(config.sample_dir))
         
         #get fixed z
         with open("test_z_fixed.pkl",'r') as infile:
