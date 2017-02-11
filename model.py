@@ -254,10 +254,10 @@ class DCGAN(object):
         if reuse:
             tf.get_variable_scope().reuse_variables()
 
-        h0 = lrelu(conv2d(image, config.df_dim, k_h=3, k_w=3, name='d_h0_conv'))
-        h1 = lrelu(batch_norm(conv2d(h0, config.df_dim * 2, k_h=3, k_w=3, name='d_h1_conv'), 'd_bn1'))
-        h2 = lrelu(batch_norm(conv2d(h1, config.df_dim * 4, k_h=3, k_w=3, name='d_h2_conv'), 'd_bn2'))
-        h3 = lrelu(batch_norm(conv2d(h2, config.df_dim * 8, k_h=3, k_w=3, name='d_h3_conv'), 'd_bn3'))
+        h0 = lrelu(conv2d(image, config.df_dim, k_h=5, k_w=5, name='d_h0_conv'))
+        h1 = lrelu(batch_norm(conv2d(h0, config.df_dim * 2, k_h=5, k_w=5, name='d_h1_conv'), 'd_bn1'))
+        h2 = lrelu(batch_norm(conv2d(h1, config.df_dim * 4, k_h=5, k_w=5, name='d_h2_conv'), 'd_bn2'))
+        h3 = lrelu(batch_norm(conv2d(h2, config.df_dim * 8, k_h=5, k_w=5, name='d_h3_conv'), 'd_bn3'))
 
         h4 = linear(tf.reshape(h3, [config.batch_size, -1]), 1, 'd_h3_lin')
 

@@ -51,7 +51,7 @@ tf.app.flags.DEFINE_boolean("add_hz", False, "True for add random z in each hidd
 tf.app.flags.DEFINE_integer("test_image_idx", -1, "test_image_idx")
 tf.app.flags.DEFINE_boolean("random_z", True, "test random z")
 tf.app.flags.DEFINE_integer("number_of_test_images", 64, "number_of_test_images")
-tf.app.flags.DEFINE_float("smooth", 1.0, "smooth")
+tf.app.flags.DEFINE_float("smooth", 0.8, "smooth")
 
 FLAGS = tf.app.flags.FLAGS
 
