@@ -523,7 +523,7 @@ class DCGAN(object):
         test_images = []
         for test_image_idx in test_image_idxs:
             test_image = data.load_one_data(config, test_image_idx)
-            test_images.append(test_image[0].squeeze())
+            test_images.append(test_image)
         test_image_batch = np.array(test_images, dtype=np.float32)
         save_image(test_image_batch, '{}/test_fixed_origin.png'.format(config.sample_dir))
         
