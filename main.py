@@ -88,7 +88,7 @@ def main(_):
                     print " [*] Load SUCCESS"
                     if FLAGS.random_z:
                         print " [*] Test RANDOM Z"
-                        dcgan.test_random_z(FLAGS)
+                        dcgan.test_fix(FLAGS)
                     else:
                         print " [*] Test Z"
                         dcgan.test_z(FLAGS)
