@@ -14,7 +14,7 @@ tf.app.flags.DEFINE_integer("center_crop_size", 108, "The width of the images pr
 tf.app.flags.DEFINE_boolean("is_crop", True, "True for training, False for testing [False]")
 tf.app.flags.DEFINE_integer("train_size", np.inf, "The size of train images [np.inf]")
 
-tf.app.flags.DEFINE_string("dir_tag", "z100_d1_g1_new", "dir_tag for sample_dir and checkpoint_dir")
+tf.app.flags.DEFINE_string("dir_tag", "lsun_lsun_z100", "dir_tag for sample_dir and checkpoint_dir")
 tf.app.flags.DEFINE_string("result_dir", "./result/", "Where to save the checkpoint and sample")
 tf.app.flags.DEFINE_boolean("is_train", False, "True for training, False for testing [False]")
 tf.app.flags.DEFINE_boolean("visualize", False, "True for visualizing, False for nothing [False]")
@@ -51,7 +51,8 @@ tf.app.flags.DEFINE_boolean("add_hz", False, "True for add random z in each hidd
 tf.app.flags.DEFINE_integer("test_image_idx", -1, "test_image_idx")
 tf.app.flags.DEFINE_boolean("random_z", True, "test random z")
 tf.app.flags.DEFINE_integer("number_of_test_images", 64, "number_of_test_images")
-tf.app.flags.DEFINE_float("smooth", 0.8, "smooth")
+tf.app.flags.DEFINE_float("smooth", 1.0, "smooth")
+tf.app.flags.DEFINE_integer("d_kernel_size", 5, "d_kernel_size")
 
 FLAGS = tf.app.flags.FLAGS
 
