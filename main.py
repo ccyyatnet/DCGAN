@@ -53,6 +53,7 @@ tf.app.flags.DEFINE_boolean("random_z", True, "test random z")
 tf.app.flags.DEFINE_integer("number_of_test_images", 64, "number_of_test_images")
 tf.app.flags.DEFINE_float("smooth", 1.0, "smooth")
 tf.app.flags.DEFINE_integer("d_kernel_size", 5, "d_kernel_size")
+tf.app.flags.DEFINE_integer("test_offset", 0, "test_offset(<1000)")
 
 FLAGS = tf.app.flags.FLAGS
 

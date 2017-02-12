@@ -519,13 +519,13 @@ class DCGAN(object):
         save_size = int(math.sqrt(config.batch_size))
 
         #get fixed image
-        test_image_idxs = np.arange(config.batch_size)*1000
+        test_image_idxs = np.arange(config.batch_size)*1000+config.test_offset
         test_images = []
         for test_image_idx in test_image_idxs:
             test_image = data.load_one_data(config, test_image_idx)
             test_images.append(test_image)
         test_image_batch = np.array(test_images, dtype=np.float32)
-        save_images(test_image_batch,[save_size, save_size] , '{}/test_fixed_origin.png'.format(config.sample_dir))
+        save_images(test_image_batch,[save_size, save_size] , '{}/test_fixed_origin_{:01d}.png'.format(config.sample_dir, config.test_offset))
         
         #get fixed z
         with open("test_z_fixed.pkl",'r') as infile:
@@ -539,13 +539,13 @@ class DCGAN(object):
             print 'Round',test_round_idx, 
             generate_image, probs_real, probs_fake, avg_prob_real, avg_prob_fake = self.sess.run([self.generate_image, self.probs_real, self.probs_fake, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: test_z_batches[test_round_idx], self.images: test_image_batch})
             print "prob_real: %.8f, prob_fake: %.8f" % (avg_prob_real, avg_prob_fake)
-            save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_fixed_round_1{:02d}.png'.format(config.sample_dir, test_round_idx))
+            save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_fixed_round_{:01d}{:02d}.png'.format(config.sample_dir, config.test_offset, test_round_idx))
 
             save_result_prob_real.append(probs_real)
             save_result_prob_fake.append(probs_fake)
         
         print 'Test done.'
 
-        with open('{}/test_fixed_prob.pkl'.format(config.sample_dir), 'w') as outfile:
+        with open('{}/test_fixed_prob_{:01d}.pkl'.format(config.sample_dir, config.test_offset), 'w') as outfile:
             cPickle.dump((test_image_idxs, test_images, test_z_batches, save_result_prob_real, save_result_prob_fake), outfile)
         print 'Save done.'
