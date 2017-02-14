@@ -148,7 +148,7 @@ class DCGAN(object):
         #self.probs_madefake, self.logits_madefake = self.discriminator(self.madefake_image, reuse=True, config=config)
 
         self.g_loss_body = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.ones([config.batch_size,1])*config.smooth))
-        self.g_loss_l1 = tf.reduce_sum(tf.abs(tf.sub(self.images_Y, tf.reduce_mean(tf.mul(self.generate_images_RGB, np.array([0.299,0.587,0.114], dtype=np.float32)), reduction_indices=3, keep_dims=True))))
+        self.g_loss_l1 = tf.reduce_sum(tf.abs(tf.sub(self.images_Y, tf.reduce_mean(tf.mul(self.generate_images_RGB, np.array([0.299,0.587,0.114], dtype=np.float32)), reduction_indices=3, keep_dims=True))))/config.batch_size
         self.g_loss = self.g_loss_body + config.l1_lambda*self.g_loss_l1
         #self.d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.ones([config.batch_size,1])*(1.-config.smooth)))
         self.d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.zeros([config.batch_size,1])))
@@ -226,7 +226,7 @@ class DCGAN(object):
 
                 # Update D network
                 for k_d in xrange(0, config.K_for_Dtrain):
-                    _, summary_str, _loss, _prob_real, _prob_fake = self.sess.run([d_optim, self.merged_summary, self.total_loss, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: batch_z, self.images_RGB: batch_images})
+                    _, summary_str, _loss, _g_loss_body, _g_loss_l1, _d_loss, _prob_real, _prob_fake = self.sess.run([d_optim, self.merged_summary, self.total_loss, self.g_loss_body, self.g_loss_l1, self.d_loss, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: batch_z, self.images_RGB: batch_images})
                     self.writer.add_summary(summary_str, counter)
                     # when running d_optim, basically the whole graph will be executed, so, we get summary and log info from here.
 
@@ -234,7 +234,7 @@ class DCGAN(object):
                 for k_g in xrange(0, config.K_for_Gtrain):
                     self.sess.run([g_optim], feed_dict={self.z: batch_z, self.images_RGB: batch_images})
 
-                print("Epoch: [%2d] [%5d/%5d] time: %4.4f, loss: %.8f, prob_real: %.8f, prob_fake: %.8f" % (
+                print("Epoch: [%2d] [%5d/%5d] time: %4.4f, total loss: %.8f, g_loss_body: %.8f, g_loss_l1: %.8f,\n\t d_loss: %.8f, prob_real: %.8f, prob_fake: %.8f" % (
                     epoch, idx, batch_idxs, time.time() - start_time, _loss, _prob_real, _prob_fake))
                 log_txt.write("{:d} {:d} {:d} {:.8f} {:.8f} {:.8f}\n".format(epoch, idx, batch_idxs, _loss, _prob_real, _prob_fake))
 
