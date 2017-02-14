@@ -134,8 +134,8 @@ class DCGAN(object):
         self.images_RGB = tf.placeholder(tf.float32, [config.batch_size] + [config.image_size, config.image_size, config.c_dim], name='real_images_RGB')
         #self.images_Y = tf.slice(self.images, [0,0,0,0], [-1, -1,-1,1])
         #self.images_Y, self.images_U, self.images_V = tf.split(3, 3, self.images_YUV)
-        self.images_Y = tf.matmul(self.images_RGB, np.array([[0.299],[0.587],[0.114]], dtype=np.float32))
-        print 'Y shape after matmul', self.images_Y.get_shape()
+        self.images_Y = tf.reduce_mean(tf.mul(self.images_RGB, np.array([0.299,0.587,0.114], dtype=np.float32)), axis=3, keep_dims=True)
+        print 'Y shape after mul', self.images_Y.get_shape()
 
         #self.generate_image = self.generator(self.z, config=config) #old
         self.generate_images_RGB = self.generator_colorization(self.z, self.images_Y, config=config) #check if direct slice correct
@@ -148,7 +148,7 @@ class DCGAN(object):
         #self.probs_madefake, self.logits_madefake = self.discriminator(self.madefake_image, reuse=True, config=config)
 
         self.g_loss_body = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.ones([config.batch_size,1])*config.smooth))
-        self.g_loss_l1 = tf.reduce_sum(tf.abs(tf.subtract(self.images_Y, tf.matmul(self.generate_images_RGB, np.array([[0.299],[0.587],[0.114]], dtype=np.float32)))))
+        self.g_loss_l1 = tf.reduce_sum(tf.abs(tf.subtract(self.images_Y, tf.reduce_mean(tf.mul(self.generate_images_RGB, np.array([0.299,0.587,0.114], dtype=np.float32)), axis=3, keep_dims=True))))
         self.g_loss = self.g_loss_body + config.l1_lambda*self.g_loss_l1
         #self.d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.ones([config.batch_size,1])*(1.-config.smooth)))
         self.d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.zeros([config.batch_size,1])))
