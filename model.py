@@ -241,18 +241,18 @@ class DCGAN(object):
                 if np.mod(counter, 200) == 1:
                     save_size = int(math.sqrt(config.batch_size))
                     #z1
-                    _generate_image, _loss, _prob_real, _prob_fake = self.sess.run([self.generate_image, self.total_loss, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: sample_z1, self.images_RGB: sample_images})
+                    _generate_image, _loss, _prob_real, _prob_fake = self.sess.run([self.generate_images_RGB, self.total_loss, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: sample_z1, self.images_RGB: sample_images})
                     scipy.misc.imsave('{}/train_{:02d}_{:05d}_z1.png'.format(config.sample_dir, epoch, idx), merge(_generate_image[:save_size * save_size], [save_size, save_size]))
                     #save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:05d}_z1.png'.format(config.sample_dir, epoch, idx))
                     print("[Sample] loss z1: %.8f, prob_real: %.8f, prob_fake: %.8f" % (_loss, _prob_real, _prob_fake))
                     log_txt.write("0 0 -1 {:.8f} {:.8f} {:.8f}\n".format(_loss, _prob_real, _prob_fake))
                     #z2
-                    _generate_image, _loss, _prob_real, _prob_fake = self.sess.run([self.generate_image, self.total_loss, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: sample_z2, self.images_RGB: sample_images})
+                    _generate_image, _loss, _prob_real, _prob_fake = self.sess.run([self.generate_images_RGB, self.total_loss, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: sample_z2, self.images_RGB: sample_images})
                     scipy.misc.imsave('{}/train_{:02d}_{:05d}_z2.png'.format(config.sample_dir, epoch, idx), merge(_generate_image[:save_size * save_size], [save_size, save_size]))
                     print("[Sample] loss z2: %.8f, prob_real: %.8f, prob_fake: %.8f" % (_loss, _prob_real, _prob_fake))
                     log_txt.write("0 0 -2 {:.8f} {:.8f} {:.8f}\n".format(_loss, _prob_real, _prob_fake))
                     #z3
-                    _generate_image, _loss, _prob_real, _prob_fake = self.sess.run([self.generate_image, self.total_loss, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: sample_z3, self.images_RGB: sample_images})
+                    _generate_image, _loss, _prob_real, _prob_fake = self.sess.run([self.generate_images_RGB, self.total_loss, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: sample_z3, self.images_RGB: sample_images})
                     scipy.misc.imsave('{}/train_{:02d}_{:05d}_z3.png'.format(config.sample_dir, epoch, idx), merge(_generate_image[:save_size * save_size], [save_size, save_size]))
                     print("[Sample] loss z3: %.8f, prob_real: %.8f, prob_fake: %.8f" % (_loss, _prob_real, _prob_fake))
                     log_txt.write("0 0 -3 {:.8f} {:.8f} {:.8f}\n".format(_loss, _prob_real, _prob_fake))
