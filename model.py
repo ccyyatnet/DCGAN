@@ -148,7 +148,7 @@ class DCGAN(object):
         #self.probs_madefake, self.logits_madefake = self.discriminator(self.madefake_image, reuse=True, config=config)
 
         self.g_loss_body = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.ones([config.batch_size,1])*config.smooth))
-        self.g_loss_l1 = tf.reduce_sum(tf.abs(tf.subtract(self.images_Y, tf.reduce_mean(tf.mul(self.generate_images_RGB, np.array([0.299,0.587,0.114], dtype=np.float32)), reduction_indices=3, keep_dims=True))))
+        self.g_loss_l1 = tf.reduce_sum(tf.abs(tf.sub(self.images_Y, tf.reduce_mean(tf.mul(self.generate_images_RGB, np.array([0.299,0.587,0.114], dtype=np.float32)), reduction_indices=3, keep_dims=True))))
         self.g_loss = self.g_loss_body + config.l1_lambda*self.g_loss_l1
         #self.d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.ones([config.batch_size,1])*(1.-config.smooth)))
         self.d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.zeros([config.batch_size,1])))
