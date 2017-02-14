@@ -56,6 +56,17 @@ class DataProvider(object):
 
         return batch_images  # , batch_labels
 
+    def load_data_RGB(self, config, idx):
+
+        if idx == 0:
+                np.random.shuffle(self.data)
+
+        batch_files = self.data[idx * config.batch_size:(idx + 1) * config.batch_size]
+        
+        batch_images = np.array([(np.array(imread(batch_file), dtype=np.float32)/127.5 - 1.) for batch_file in batch_files], dtype=np.float32)
+
+        return batch_images  # , batch_labels
+
     def load_the_data(self, config, idx):
         batch_files = self.data[idx * config.batch_size:(idx + 1) * config.batch_size]
         return np.array([get_image_faster(batch_file) for batch_file in batch_files], dtype=np.float32)
@@ -116,24 +127,29 @@ class DCGAN(object):
         self.build_model(config)
 
     def build_model(self, config):
+        #generate RGB version
 
         self.z = tf.placeholder(tf.float32, [config.batch_size, config.z_dim], name='z')
-        self.images = tf.placeholder(tf.float32, [config.batch_size] + [config.image_size, config.image_size, config.c_dim], name='real_images')
+        #self.images_YUV = tf.placeholder(tf.float32, [config.batch_size] + [config.image_size, config.image_size, config.c_dim], name='real_images_YUV')
+        self.images_RGB = tf.placeholder(tf.float32, [config.batch_size] + [config.image_size, config.image_size, config.c_dim], name='real_images_RGB')
         #self.images_Y = tf.slice(self.images, [0,0,0,0], [-1, -1,-1,1])
-        self.images_Y, self.images_U, self.images_V = tf.split(3, 3, self.images)
-        print 'Y shape after split', self.images_Y.get_shape()
+        #self.images_Y, self.images_U, self.images_V = tf.split(3, 3, self.images_YUV)
+        self.images_Y = tf.matmul(self.images_RGB, np.array([[0.299],[0.587],[0.114]], dtype=np.float32))
+        print 'Y shape after matmul', self.images_Y.get_shape()
 
         #self.generate_image = self.generator(self.z, config=config) #old
-        self.generate_image_UV = self.generator_colorization(self.z, self.images_Y, config=config) #check if direct slice correct
-        self.generate_image = tf.concat(3, [self.images_Y, self.generate_image_UV])
+        self.generate_images_RGB = self.generator_colorization(self.z, self.images_Y, config=config) #check if direct slice correct
+        #self.generate_image = tf.concat(3, [self.images_Y, self.generate_image_UV])
         #self.round_Y = tf.concat(3, [self.images_Y[1:], self.images_Y[0]])
         #self.madefake_image = tf.concat(3, [self.images_Y, self.generate_image_UV])
 
-        self.probs_real, self.logits_real = self.discriminator(self.images, config=config)
-        self.probs_fake, self.logits_fake = self.discriminator(self.generate_image, reuse=True, config=config)
+        self.probs_real, self.logits_real = self.discriminator(self.images_RGB, config=config)
+        self.probs_fake, self.logits_fake = self.discriminator(self.generate_images_RGB, reuse=True, config=config)
         #self.probs_madefake, self.logits_madefake = self.discriminator(self.madefake_image, reuse=True, config=config)
 
-        self.g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.ones([config.batch_size,1])*config.smooth))
+        self.g_loss_body = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.ones([config.batch_size,1])*config.smooth))
+        self.g_loss_l1 = tf.reduce_sum(tf.abs(tf.subtract(self.images_Y, tf.matmul(self.generate_images_RGB, np.array([[0.299],[0.587],[0.114]], dtype=np.float32)))))
+        self.g_loss = self.g_loss_body + config.l1_lambda*self.g_loss_l1
         #self.d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.ones([config.batch_size,1])*(1.-config.smooth)))
         self.d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.zeros([config.batch_size,1])))
         #self.d_loss_madefake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_madefake, tf.zeros([config.batch_size, 1])))
@@ -146,7 +162,7 @@ class DCGAN(object):
 
         # tensorfolw summary:
 
-        tf.image_summary("generate_image", self.generate_image, 1000)
+        tf.image_summary("generate_image", self.generate_images_RGB, 1000)
 
         tf.histogram_summary("prob_real", self.probs_real)
         tf.histogram_summary("prob_fake", self.probs_fake)
@@ -182,13 +198,13 @@ class DCGAN(object):
 
         data = DataProvider(config)
 
-        sample_images = data.load_data(config, 0)
+        sample_images = data.load_data_RGB(config, 0)
         sample_z1 = np.random.uniform(-1, 1, size=(config.batch_size, config.z_dim))
         sample_z2 = np.random.uniform(-1, 1, size=(config.batch_size, config.z_dim))
         sample_z3 = np.random.uniform(-1, 1, size=(config.batch_size, config.z_dim))
 
         save_size = int(math.sqrt(config.batch_size))
-        save_images(sample_images[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:05d}.png'.format(config.sample_dir, 0, 0))
+        scipy.misc.imsave('{}/train_{:02d}_{:05d}.png'.format(config.sample_dir, 0, 0), merge(sample_images[:save_size * save_size], [save_size, save_size]))
 
         if config.b_loadcheckpoint:
             if self.load(config):
@@ -226,17 +242,18 @@ class DCGAN(object):
                     save_size = int(math.sqrt(config.batch_size))
                     #z1
                     _generate_image, _loss, _prob_real, _prob_fake = self.sess.run([self.generate_image, self.total_loss, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: sample_z1, self.images: sample_images})
-                    save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:05d}_z1.png'.format(config.sample_dir, epoch, idx))
+                    scipy.misc.imsave('{}/train_{:02d}_{:05d}_z1.png'.format(config.sample_dir, epoch, idx), merge(_generate_image[:save_size * save_size], [save_size, save_size]))
+                    #save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:05d}_z1.png'.format(config.sample_dir, epoch, idx))
                     print("[Sample] loss z1: %.8f, prob_real: %.8f, prob_fake: %.8f" % (_loss, _prob_real, _prob_fake))
                     log_txt.write("0 0 -1 {:.8f} {:.8f} {:.8f}\n".format(_loss, _prob_real, _prob_fake))
                     #z2
                     _generate_image, _loss, _prob_real, _prob_fake = self.sess.run([self.generate_image, self.total_loss, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: sample_z2, self.images: sample_images})
-                    save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:05d}_z2.png'.format(config.sample_dir, epoch, idx))
+                    scipy.misc.imsave('{}/train_{:02d}_{:05d}_z2.png'.format(config.sample_dir, epoch, idx), merge(_generate_image[:save_size * save_size], [save_size, save_size]))
                     print("[Sample] loss z2: %.8f, prob_real: %.8f, prob_fake: %.8f" % (_loss, _prob_real, _prob_fake))
                     log_txt.write("0 0 -2 {:.8f} {:.8f} {:.8f}\n".format(_loss, _prob_real, _prob_fake))
                     #z3
                     _generate_image, _loss, _prob_real, _prob_fake = self.sess.run([self.generate_image, self.total_loss, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: sample_z3, self.images: sample_images})
-                    save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:05d}_z3.png'.format(config.sample_dir, epoch, idx))
+                    scipy.misc.imsave('{}/train_{:02d}_{:05d}_z3.png'.format(config.sample_dir, epoch, idx), merge(_generate_image[:save_size * save_size], [save_size, save_size]))
                     print("[Sample] loss z3: %.8f, prob_real: %.8f, prob_fake: %.8f" % (_loss, _prob_real, _prob_fake))
                     log_txt.write("0 0 -3 {:.8f} {:.8f} {:.8f}\n".format(_loss, _prob_real, _prob_fake))
                     #save_images(_generate_image[:save_size * save_size], [save_size, save_size], '{}/train_{:02d}_{:04d}.png'.format(config.sample_dir, epoch, idx))
@@ -331,7 +348,7 @@ class DCGAN(object):
         h5 = tf.nn.relu(batch_norm(h5, 'g_bn5'))
         
         h6 = tf.concat(3, [image_Y, h5])
-        h6 = conv2d(h6, 2, k_h = 5, k_w = 5,  d_h = 1, d_w = 1, name = 'g_h6_conv')
+        h6 = conv2d(h6, 3, k_h = 5, k_w = 5,  d_h = 1, d_w = 1, name = 'g_h6_conv')
         out = tf.nn.tanh(h6)
 
         print 'generator out shape:', out.get_shape()
