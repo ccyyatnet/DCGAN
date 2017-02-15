@@ -78,6 +78,14 @@ class DataProvider(object):
         image = get_image_faster(self.data[idx])
         return image
 
+    def load_one_data_RGB(self, config, idx):
+        if idx<0:
+            idx = np.random.randint(0, self.len)
+        #image = get_image(self.data[idx], config.center_crop_size, is_crop=config.is_crop, resize_w=config.image_size, is_grayscale=config.is_grayscale)
+        #image = get_image_faster(self.data[idx])
+        image = np.array(imread(self.data[idx]), dtype = np.float32)/127.5 - 1.
+        return image
+
     def read_and_decode(self, filename_queue):
 
         reader = tf.TFRecordReader()
@@ -539,11 +547,12 @@ class DCGAN(object):
         test_image_idxs = np.arange(config.batch_size)*1000+config.test_offset
         test_images = []
         for test_image_idx in test_image_idxs:
-            test_image = data.load_one_data(config, test_image_idx)
+            test_image = data.load_one_data_RGB(config, test_image_idx)
             test_images.append(test_image)
         test_image_batch = np.array(test_images, dtype=np.float32)
-        save_images(test_image_batch,[save_size, save_size] , '{}/test_fixed_origin_{:01d}.png'.format(config.sample_dir, config.test_offset))
-        
+        #save_images(test_image_batch,[save_size, save_size] , '{}/test_fixed_origin_{:01d}.png'.format(config.sample_dir, config.test_offset))
+        scipy.misc.imsave('{}/test_fixed_origin_{:01d}.png'.format(config.sample_dir, config.test_offset), merge(test_image_batch[:save_size * save_size], [save_size, save_size]))
+
         #get fixed z
         with open("test_z_fixed.pkl",'r') as infile:
             test_z_batches = cPickle.load(infile)
@@ -554,9 +563,10 @@ class DCGAN(object):
         print "Testing fixed %d images..."%config.batch_size
         for test_round_idx in range(config.batch_size):
             print 'Round',test_round_idx, 
-            generate_image, probs_real, probs_fake, avg_prob_real, avg_prob_fake = self.sess.run([self.generate_image, self.probs_real, self.probs_fake, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: test_z_batches[test_round_idx], self.images: test_image_batch})
+            generate_image, probs_real, probs_fake, avg_prob_real, avg_prob_fake = self.sess.run([self.generate_images_RGB, self.probs_real, self.probs_fake, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: test_z_batches[test_round_idx], self.images_RGB: test_image_batch})
             print "prob_real: %.8f, prob_fake: %.8f" % (avg_prob_real, avg_prob_fake)
-            save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_fixed_round_{:01d}{:02d}.png'.format(config.sample_dir, config.test_offset, test_round_idx))
+            #save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_fixed_round_{:01d}{:02d}.png'.format(config.sample_dir, config.test_offset, test_round_idx))
+            scipy.misc.imsave('{}/test_fixed_round_{:01d}{:02d}.png'.format(config.sample_dir, config.test_offset, test_round_idx), merge(generate_image[:save_size * save_size], [save_size, save_size]))
 
             save_result_prob_real.append(probs_real)
             save_result_prob_fake.append(probs_fake)
