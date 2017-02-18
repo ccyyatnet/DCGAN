@@ -356,7 +356,7 @@ class DCGAN(object):
         h5 = tf.nn.relu(batch_norm(h5, 'g_bn5'))
         
         h6 = tf.concat(3, [image_Y, h5])
-        h6 = conv2d(h6, 3, k_h = 5, k_w = 5,  d_h = 1, d_w = 1, name = 'g_h6_conv')
+        h6 = conv2d(h6, 2, k_h = 5, k_w = 5,  d_h = 1, d_w = 1, name = 'g_h6_conv')
         out = tf.nn.tanh(h6)
 
         print 'generator out shape:', out.get_shape()
