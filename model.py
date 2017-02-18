@@ -563,7 +563,7 @@ class DCGAN(object):
         print "Testing fixed %d images..."%config.batch_size
         for test_round_idx in range(config.batch_size):
             print 'Round',test_round_idx, 
-            generate_image, probs_real, probs_fake, avg_prob_real, avg_prob_fake = self.sess.run([self.generate_image, self.probs_real, self.probs_fake, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: test_z_batches[test_round_idx], self.images_RGB: test_image_batch})
+            generate_image, probs_real, probs_fake, avg_prob_real, avg_prob_fake = self.sess.run([self.generate_image, self.probs_real, self.probs_fake, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: test_z_batches[test_round_idx], self.images: test_image_batch})
             print "prob_real: %.8f, prob_fake: %.8f" % (avg_prob_real, avg_prob_fake)
             save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_fixed_round_{:01d}{:02d}.png'.format(config.sample_dir, config.test_offset, test_round_idx))
             #scipy.misc.imsave('{}/test_fixed_round_{:01d}{:02d}.png'.format(config.sample_dir, config.test_offset, test_round_idx), merge(generate_image[:save_size * save_size], [save_size, save_size]))
