@@ -146,8 +146,8 @@ class DCGAN(object):
         print 'Y shape after mul', self.images_Y.get_shape()
 
         #self.generate_image = self.generator(self.z, config=config) #old
-        self.generate_image = self.generator_colorization(self.z, self.images_Y, config=config) #check if direct slice correct
-        #self.generate_image = tf.concat(3, [self.images_Y, self.generate_image_UV])
+        self.generate_image_UV = self.generator_colorization(self.z, self.images_Y, config=config) #check if direct slice correct
+        self.generate_image = tf.concat(3, [self.images_Y, self.generate_image_UV])
         #self.round_Y = tf.concat(3, [self.images_Y[1:], self.images_Y[0]])
         #self.madefake_image = tf.concat(3, [self.images_Y, self.generate_image_UV])
 
