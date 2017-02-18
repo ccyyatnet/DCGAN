@@ -102,7 +102,7 @@ def merge(images, size):
     return img
 
 def imsave(images, size, path):
-    return scipy.misc.imsave(path, cvtYUV2RGB(merge(images, size)))
+    return scipy.misc.imsave(path, cvtYUV2RGB(merge(images, size)).clip(min=0,max=255))
 
 ########### tools ################
 def to_json(output_path, *layers):

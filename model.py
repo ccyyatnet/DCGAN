@@ -138,30 +138,30 @@ class DCGAN(object):
         #generate RGB version
 
         self.z = tf.placeholder(tf.float32, [config.batch_size, config.z_dim], name='z')
-        #self.images_YUV = tf.placeholder(tf.float32, [config.batch_size] + [config.image_size, config.image_size, config.c_dim], name='real_images_YUV')
-        self.images_RGB = tf.placeholder(tf.float32, [config.batch_size] + [config.image_size, config.image_size, config.c_dim], name='real_images_RGB')
+        self.images = tf.placeholder(tf.float32, [config.batch_size] + [config.image_size, config.image_size, config.c_dim], name='real_images_YUV')
+        #self.images_RGB = tf.placeholder(tf.float32, [config.batch_size] + [config.image_size, config.image_size, config.c_dim], name='real_images_RGB')
         #self.images_Y = tf.slice(self.images, [0,0,0,0], [-1, -1,-1,1])
-        #self.images_Y, self.images_U, self.images_V = tf.split(3, 3, self.images_YUV)
-        self.images_Y = tf.reduce_mean(tf.mul(self.images_RGB, np.array([0.299,0.587,0.114], dtype=np.float32)), reduction_indices=3, keep_dims=True)
+        self.images_Y, self.images_U, self.images_V = tf.split(3, 3, self.images)
+        #self.images_Y = tf.reduce_mean(tf.mul(self.images_RGB, np.array([0.299,0.587,0.114], dtype=np.float32)), reduction_indices=3, keep_dims=True)
         print 'Y shape after mul', self.images_Y.get_shape()
 
         #self.generate_image = self.generator(self.z, config=config) #old
-        self.generate_images_RGB = self.generator_colorization(self.z, self.images_Y, config=config) #check if direct slice correct
+        self.generate_image = self.generator_colorization(self.z, self.images_Y, config=config) #check if direct slice correct
         #self.generate_image = tf.concat(3, [self.images_Y, self.generate_image_UV])
         #self.round_Y = tf.concat(3, [self.images_Y[1:], self.images_Y[0]])
         #self.madefake_image = tf.concat(3, [self.images_Y, self.generate_image_UV])
 
-        self.probs_real, self.logits_real = self.discriminator(self.images_RGB, config=config)
-        self.probs_fake, self.logits_fake = self.discriminator(self.generate_images_RGB, reuse=True, config=config)
+        self.probs_real, self.logits_real = self.discriminator(self.images, config=config)
+        self.probs_fake, self.logits_fake = self.discriminator(self.generate_image, reuse=True, config=config)
         #self.probs_madefake, self.logits_madefake = self.discriminator(self.madefake_image, reuse=True, config=config)
 
-        self.g_loss_body = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.ones([config.batch_size,1])*config.smooth))
-        self.g_loss_l1 = config.l1_lambda*tf.reduce_sum(tf.abs(tf.sub(self.images_Y, tf.reduce_mean(tf.mul(self.generate_images_RGB, np.array([0.299,0.587,0.114], dtype=np.float32)), reduction_indices=3, keep_dims=True))))/config.batch_size
-        self.g_loss = self.g_loss_body + self.g_loss_l1
+        self.g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.ones([config.batch_size,1])))
+        #self.g_loss_l1 = config.l1_lambda*tf.reduce_sum(tf.abs(tf.sub(self.images_Y, tf.reduce_mean(tf.mul(self.generate_images_YUV, np.array([0.299,0.587,0.114], dtype=np.float32)), reduction_indices=3, keep_dims=True))))/config.batch_size
+        #self.g_loss = self.g_loss_body + self.g_loss_l1
         #self.d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.ones([config.batch_size,1])*(1.-config.smooth)))
         self.d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_fake, tf.zeros([config.batch_size,1])))
         #self.d_loss_madefake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_madefake, tf.zeros([config.batch_size, 1])))
-        self.d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_real, tf.ones([config.batch_size,1])*config.smooth))
+        self.d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.logits_real, tf.ones([config.batch_size,1])))
         self.d_loss = self.d_loss_real + self.d_loss_fake
 
         self.total_loss = self.d_loss + self.g_loss
@@ -170,7 +170,7 @@ class DCGAN(object):
 
         # tensorfolw summary:
 
-        tf.image_summary("generate_image", self.generate_images_RGB, 1000)
+        tf.image_summary("generate_image", self.generate_image, 1000)
 
         tf.histogram_summary("prob_real", self.probs_real)
         tf.histogram_summary("prob_fake", self.probs_fake)
@@ -547,11 +547,11 @@ class DCGAN(object):
         test_image_idxs = np.arange(config.batch_size)*1000+config.test_offset
         test_images = []
         for test_image_idx in test_image_idxs:
-            test_image = data.load_one_data_RGB(config, test_image_idx)
+            test_image = data.load_one_data(config, test_image_idx)
             test_images.append(test_image)
         test_image_batch = np.array(test_images, dtype=np.float32)
-        #save_images(test_image_batch,[save_size, save_size] , '{}/test_fixed_origin_{:01d}.png'.format(config.sample_dir, config.test_offset))
-        scipy.misc.imsave('{}/test_fixed_origin_{:01d}.png'.format(config.sample_dir, config.test_offset), merge(test_image_batch[:save_size * save_size], [save_size, save_size]))
+        save_images(test_image_batch,[save_size, save_size] , '{}/test_fixed_origin_{:01d}.png'.format(config.sample_dir, config.test_offset))
+        #scipy.misc.imsave('{}/test_fixed_origin_{:01d}.png'.format(config.sample_dir, config.test_offset), merge(test_image_batch[:save_size * save_size], [save_size, save_size]))
 
         #get fixed z
         with open("test_z_fixed.pkl",'r') as infile:
@@ -563,10 +563,10 @@ class DCGAN(object):
         print "Testing fixed %d images..."%config.batch_size
         for test_round_idx in range(config.batch_size):
             print 'Round',test_round_idx, 
-            generate_image, probs_real, probs_fake, avg_prob_real, avg_prob_fake = self.sess.run([self.generate_images_RGB, self.probs_real, self.probs_fake, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: test_z_batches[test_round_idx], self.images_RGB: test_image_batch})
+            generate_image, probs_real, probs_fake, avg_prob_real, avg_prob_fake = self.sess.run([self.generate_image, self.probs_real, self.probs_fake, self.avg_prob_real, self.avg_prob_fake], feed_dict={self.z: test_z_batches[test_round_idx], self.images_RGB: test_image_batch})
             print "prob_real: %.8f, prob_fake: %.8f" % (avg_prob_real, avg_prob_fake)
-            #save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_fixed_round_{:01d}{:02d}.png'.format(config.sample_dir, config.test_offset, test_round_idx))
-            scipy.misc.imsave('{}/test_fixed_round_{:01d}{:02d}.png'.format(config.sample_dir, config.test_offset, test_round_idx), merge(generate_image[:save_size * save_size], [save_size, save_size]))
+            save_images(generate_image[:save_size * save_size], [save_size, save_size], '{}/test_fixed_round_{:01d}{:02d}.png'.format(config.sample_dir, config.test_offset, test_round_idx))
+            #scipy.misc.imsave('{}/test_fixed_round_{:01d}{:02d}.png'.format(config.sample_dir, config.test_offset, test_round_idx), merge(generate_image[:save_size * save_size], [save_size, save_size]))
 
             save_result_prob_real.append(probs_real)
             save_result_prob_fake.append(probs_fake)
